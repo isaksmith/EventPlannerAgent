@@ -1,0 +1,26 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      POKE_WEBHOOK_SECRET: ${POKE_WEBHOOK_SECRET:-dev-secret}
+      ARIZE_ENABLED: ${ARIZE_ENABLED:-false}
+    depends_on:
+      - redis
+    volumes:
+      - ./app:/app/app
+      - ./var:/app/var
+
+volumes:
+  redis_data:
