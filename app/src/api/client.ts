@@ -26,10 +26,18 @@ export function displayApiBase(): string {
 export function assetUrl(path: string): string {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   const normalized = path.startsWith('/') ? path : `/${path}`
-  if (import.meta.env.DEV && normalized.startsWith('/api/assets/')) {
+  if (import.meta.env.DEV && normalized.startsWith('/api/')) {
     return normalized
   }
   return `${apiBase()}${normalized}`
+}
+
+/** Backend URL for links opened in a new tab (archived sites, etc.). */
+export function backendUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  if (import.meta.env.DEV) return normalized
+  return `${displayApiBase()}${normalized}`
 }
 
 export async function postPoke(body: string): Promise<string[]> {
@@ -56,6 +64,34 @@ export async function deleteSession(): Promise<void> {
   await fetch(`${apiBase()}/api/session?phone=${encodeURIComponent(DASHBOARD_PHONE)}`, {
     method: 'DELETE',
   })
+}
+
+export interface PastEvent {
+  id: string
+  name: string
+  type?: string | null
+  location?: string | null
+  dates?: string | null
+  attendees?: number | null
+  vibe?: string | null
+  theme?: string | null
+  colors: string[]
+  created_at: string
+  has_site: boolean
+  cover_url?: string | null
+  site_url?: string | null
+  brand_files: { name: string; url: string }[]
+}
+
+export async function fetchEvents(): Promise<PastEvent[]> {
+  const res = await fetch(`${apiBase()}/api/events`)
+  if (!res.ok) return []
+  const data = (await res.json()) as { events?: PastEvent[] }
+  return data.events ?? []
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  await fetch(`${apiBase()}/api/events/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
 
 export async function fetchTraces(): Promise<{ name: string; latency_ms: number }[]> {

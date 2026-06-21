@@ -1,5 +1,6 @@
 import { STATUS } from '../orchestrator/demoScript'
 import { META, ORDER } from './Tiles'
+import { PastEvents } from './PastEvents'
 import type { DeliverableKey, Phase } from '../types'
 
 export function Header(props: {
@@ -64,6 +65,7 @@ export function Header(props: {
               Live
             </button>
           </div>
+          <PastEvents />
           <button onClick={props.onReset} className="px-3 py-1.5 rounded-lg text-sm border border-line text-inkSoft hover:bg-surface2" title="Reset current mode only">
             Reset
           </button>
