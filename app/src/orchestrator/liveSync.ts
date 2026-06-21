@@ -9,6 +9,7 @@ import type {
 } from '../types'
 import type { Deliverables, OrchestratorState } from './useOrchestrator'
 import { assetUrl } from '../api/client'
+import { cleanLocationQuery, isMappableLocation } from '../lib/maps'
 
 function statusPhase(status: ProfileStatus): Phase {
   const map: Record<ProfileStatus, Phase> = {
@@ -179,10 +180,19 @@ export function deliverablesFromProfile(profile: EventProfile, apiBase: string):
       title: profile.event?.name || 'Your Event',
       subtitle: `${profile.event?.expected_attendees || '—'} attendees · ${profile.event?.location || 'TBD'}`,
     }
+  } else if (profile.status === 'executing') {
+    out.website = { url: '', eyebrow: '…', title: 'Building…', subtitle: 'Generating your registration site', loading: true }
+  }
+
+  const location = profile.event?.location
+  if (location && isMappableLocation(location)) {
+    out.location = { label: location, query: cleanLocationQuery(location) }
   }
   const drafts = profile.artifacts.outreach_drafts
   if (drafts?.length) {
     out.outreach = drafts.map(draftFromText)
+  } else if (profile.status === 'executing') {
+    out.outreach = [{ to: '…', subject: 'Drafting sponsor emails…', body: '' }]
   }
   return out
 }
@@ -191,6 +201,7 @@ export function panelsForDeliverables(d: Deliverables, prev: DeliverableKey[]): 
   const keys: DeliverableKey[] = []
   if (d.branding) keys.push('branding')
   if (d.website) keys.push('website')
+  if (d.location) keys.push('location')
   if (d.outreach) keys.push('outreach')
   return [...new Set([...prev, ...keys])]
 }

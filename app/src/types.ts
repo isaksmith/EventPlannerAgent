@@ -29,7 +29,7 @@ export interface EventProfile {
   }
 }
 
-export type DeliverableKey = 'branding' | 'website' | 'outreach'
+export type DeliverableKey = 'branding' | 'website' | 'location' | 'outreach'
 
 export interface ChatAction { label: string; reply: string; kind: 'primary' | 'danger' | 'line' }
 export interface ChatMessage { from: 'sai' | 'user'; text: string }
@@ -49,9 +49,14 @@ export interface BrandKit {
   generatedBy?: 'midjourney' | 'stub' | 'openrouter' | 'loading'
 }
 
-export interface SiteResult { url: string; eyebrow: string; title: string; subtitle: string }
+export interface SiteResult { url: string; eyebrow: string; title: string; subtitle: string; loading?: boolean }
+
+export interface LocationInfo { label: string; query: string }
 
 export interface SlackResult { ok: boolean; channels?: string[]; fallback?: string }
 export interface DevpostResult { ok: boolean; url?: string; fallback?: string }
 
 export interface EmailDraft { to: string; subject: string; body: string }
+
+/** Loading sentinel passed through to tile renders when a deliverable is still being produced. */
+export const LOADING_SENTINEL = '__loading__' as const

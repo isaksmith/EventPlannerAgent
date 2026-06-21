@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { assetUrl, backendUrl, deleteEvent, fetchEvents, type PastEvent } from '../api/client'
+import { Icon } from './Icon'
 
 function formatDate(iso: string): string {
   const d = new Date(iso)
@@ -23,7 +24,7 @@ function EventRow({ ev, onDelete }: { ev: PastEvent; onDelete: (id: string) => v
             {ev.cover_url ? (
               <img src={assetUrl(ev.cover_url)} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[14px]" style={{ color: ev.colors[0] || '#B05E40' }}>◆</span>
+              <Icon name="image" size={16} style={{ color: ev.colors[0] || '#B05E40' }} />
             )}
           </div>
           <div className="min-w-0">
@@ -39,19 +40,20 @@ function EventRow({ ev, onDelete }: { ev: PastEvent; onDelete: (id: string) => v
               href={backendUrl(ev.site_url)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] px-2 py-1 rounded-md text-surface font-medium hover:brightness-110"
+              className="text-[10px] px-2 py-1 rounded-md text-surface font-medium hover:brightness-110 inline-flex items-center gap-1"
               style={{ background: '#B05E40' }}
             >
-              View ↗
+              View <Icon name="externalLink" size={11} />
             </a>
           )}
           <button
             type="button"
             onClick={() => onDelete(ev.id)}
-            className="h-6 w-6 rounded-md border border-line text-inkSoft hover:bg-surface2 text-[12px] leading-none"
+            className="grid place-items-center h-6 w-6 rounded-md border border-line text-inkSoft hover:bg-surface2 hover:text-ink"
             title="Remove from history"
+            aria-label="Remove from history"
           >
-            ×
+            <Icon name="x" size={13} />
           </button>
         </div>
       </div>
@@ -138,13 +140,13 @@ export function PastEvents() {
         aria-expanded={open}
         title="Browse previously generated events"
       >
-        <span>🗂</span> Past events
+        <Icon name="folder" size={15} /> Past events
         {events.length > 0 && (
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-surface2 border border-line text-inkSoft">
             {events.length}
           </span>
         )}
-        <span className={'text-[10px] transition-transform ' + (open ? 'rotate-180' : '')}>▾</span>
+        <Icon name="chevronDown" size={14} className={'transition-transform ' + (open ? 'rotate-180' : '')} />
       </button>
 
       {open && (
@@ -154,10 +156,11 @@ export function PastEvents() {
             <button
               type="button"
               onClick={() => void load()}
-              className="text-[11px] px-2 py-0.5 rounded-md border border-line text-inkSoft hover:bg-surface2"
+              className="grid place-items-center h-6 w-6 rounded-md border border-line text-inkSoft hover:bg-surface2 hover:text-ink"
               title="Refresh"
+              aria-label="Refresh"
             >
-              ↻
+              <Icon name="refresh" size={13} />
             </button>
           </div>
           <div className="p-2.5">

@@ -15,7 +15,7 @@ export const STATUS = [
   'Building your event', 'Needs your approval', 'All set 🎉',
 ] as const
 
-export type Produce = 'branding' | 'website' | 'slack' | 'devpost' | 'outreach'
+export type Produce = 'branding' | 'website-loading' | 'website' | 'location' | 'outreach-loading' | 'outreach' | 'slack' | 'devpost'
 
 export interface Step {
   phase?: Phase
@@ -57,12 +57,18 @@ export const demoScript: Step[] = [
   ] } },
   { phase: 3, status: 'executing', sai: { stat: 'active', node: 'fanout', log: 'plan approved → fan out' }, msg: { from: 'sai', text: "On it! I'll build everything now and show you each piece as it's ready. Sit tight." } },
 
+  // Fire off loading skeletons for the slow-building panels right away.
+  { phase: 3, tier: 1, produce: 'website-loading', sai: { node: 'exec.deploy', log: 'kicking off site build' } },
+  { phase: 3, tier: 1, produce: 'outreach-loading', sai: { node: 'exec.outreach', log: 'drafting sponsor emails' } },
+
   // PHASE 3 — Calibrated execution (tiles appear as each finishes)
   { phase: 3, tier: 1, sai: { node: 'exec.creative', log: 'Midjourney jobs queued (logo, palette, images, background, motion)' }, span: { node: 'midjourney.logo', ms: 4200, cost: 0.0180 }, msg: { from: 'sai', text: 'Designing your brand identity…' } },
   { phase: 3, produce: 'branding', span: { node: 'midjourney.assets', ms: 3600, cost: 0.0190 }, msg: { from: 'sai', text: 'Your brand is ready — logo, colors, images and a background. Opened it on the right. 🎨 Tap “Maximize” to see everything.' } },
 
   { phase: 3, tier: 1, sai: { node: 'exec.deploy', log: 'Claude Code: profile + assets → site → Vercel' }, span: { node: 'claude.build', ms: 6800, cost: 0.0410 }, msg: { from: 'sai', text: 'Now building your registration website…' } },
   { phase: 3, produce: 'website', span: { node: 'vercel.deploy', ms: 2400, cost: 0.0030 }, msg: { from: 'sai', text: 'Your website is live 🎉 Preview on the right — berkeley-ai-hack.vercel.app' } },
+
+  { phase: 3, tier: 1, produce: 'location', sai: { node: 'exec.location', log: 'geocode venue → map card' }, span: { node: 'maps.embed', ms: 320, cost: 0.0002 }, msg: { from: 'sai', text: 'Pinned the venue on a map too — added a Location card on the right, and it’s on your site under “Getting there.”' } },
 
   { phase: 3, tier: 1, sai: { node: 'exec.browserbase', log: 'headless: Slack workspace + channels' }, span: { node: 'browserbase.slack', ms: 5200, cost: 0.0050 }, produce: 'slack', msg: { from: 'sai', text: 'Setting up your community Slack…' } },
   { phase: 3, produce: 'devpost', sai: { log: 'Devpost DOM changed → graceful fallback' }, span: { node: 'browserbase.devpost', ms: 3800, cost: 0.0040, warn: true }, msg: { from: 'sai', text: "Slack is ready — 5 channels set up. One heads-up: I couldn't auto-create the Devpost page (their site changed), so I left you a 2-minute manual guide. Everything else is done." } },

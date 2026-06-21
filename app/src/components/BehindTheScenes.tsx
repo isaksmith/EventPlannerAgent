@@ -1,5 +1,6 @@
 import { PHASES } from '../orchestrator/demoScript'
 import type { OrchestratorState } from '../orchestrator/useOrchestrator'
+import { Icon } from './Icon'
 
 function Pill({ text, kind }: { text: string; kind: 'idle' | 'coral' | 'olive' | 'ochre' | 'brick' }) {
   const map: Record<string, string> = {
@@ -33,7 +34,7 @@ export function BehindTheScenes({ open, onClose, s }: { open: boolean; onClose: 
             <div className="text-sm font-semibold">Behind the scenes</div>
             <div className="text-[11px] text-inkSoft">what Marquee is running — for transparency</div>
           </div>
-          <button onClick={onClose} className="ml-auto h-8 w-8 rounded-md border border-line text-inkSoft hover:bg-surface2">×</button>
+          <button onClick={onClose} aria-label="Close" className="ml-auto grid place-items-center h-8 w-8 rounded-md border border-line text-inkSoft hover:bg-surface2 hover:text-ink"><Icon name="x" size={16} /></button>
         </div>
         <div className="p-4 space-y-4">
           <div className="rounded-xl border border-line bg-surface p-4">

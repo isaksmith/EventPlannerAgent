@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { apiBase as getApiBase, setApiBase } from './api/client'
+import { apiBase as getApiBase, setApiBase, deleteSession } from './api/client'
 import { useOrchestrator } from './orchestrator/useOrchestrator'
 import { useLiveOrchestrator } from './orchestrator/useLiveOrchestrator'
 import { ORDER, TileGrid, MaximizeModal } from './components/Tiles'
@@ -19,6 +19,7 @@ export default function App() {
   })
   const [modal, setModal] = useState<DeliverableKey | null>(null)
   const [drawer, setDrawer] = useState(false)
+  const [chatExpanded, setChatExpanded] = useState(false)
 
   const demo = useOrchestrator()
   const liveOrch = useLiveOrchestrator(live)
@@ -26,6 +27,21 @@ export default function App() {
   const s = orch.state
 
   useEffect(() => { setApiBase(apiUrl) }, [apiUrl])
+
+  useEffect(() => {
+    if (live) return
+    if (demo.state.idx >= 0) return
+    // Auto-play the first few steps on mount so the welcome exchange is visible.
+    void (async () => {
+      demo.next()
+      await new Promise((r) => setTimeout(r, 400))
+      demo.next()
+      await new Promise((r) => setTimeout(r, 400))
+      demo.next()
+      await new Promise((r) => setTimeout(r, 400))
+      demo.next()
+    })()
+  }, [live, demo])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -38,11 +54,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [live, demo])
 
-  function planNewEvent() {
+  async function planNewEvent() {
     liveOrch.reset()
     demo.reset()
     setModal(null)
     setDrawer(false)
+    setChatExpanded(false)
+    try { await deleteSession() } catch { /* ok if no session or backend unreachable */ }
   }
 
   function toggleLive() {
@@ -54,9 +72,9 @@ export default function App() {
   }
 
   const available = ORDER.filter((k) => Boolean(s.deliverables[k]))
-  const n = s.openPanels.length
-  const basis = n === 0 ? '100%' : n <= 2 ? '50%' : n === 3 ? '44%' : '38%'
-  const nextLabel = s.done ? '✓ Done' : s.waiting ? '✋ reply in chat' : 'Next ▸'
+  const n = s.openPanels.length || ORDER.length
+  const basis = chatExpanded ? '100%' : n <= 2 ? '50%' : n === 3 ? '44%' : '38%'
+  const nextLabel = s.done ? 'Done' : s.waiting ? 'Reply in chat' : 'Next'
 
   return (
     <>
@@ -81,7 +99,7 @@ export default function App() {
 
       <main className="max-w-[1500px] mx-auto px-4 py-3">
         <div className="flex gap-4" style={{ height: 'calc(100vh - 116px)', minHeight: 420 }}>
-          <div className="h-full" style={{ flex: `0 0 ${basis}`, transition: 'flex-basis .35s cubic-bezier(.2,.7,.2,1)' }}>
+          <div className="h-full" style={{ flex: `0 0 ${chatExpanded ? '100%' : basis}`, transition: 'flex-basis .35s cubic-bezier(.2,.7,.2,1)' }}>
             <ChatPanel
               messages={s.messages}
               pendingActions={s.pendingActions}
@@ -89,15 +107,18 @@ export default function App() {
               live={live}
               onSend={live ? liveOrch.send : undefined}
               sending={live ? liveOrch.sending : false}
+              expanded={chatExpanded}
+              onToggleExpand={() => setChatExpanded((v) => !v)}
             />
           </div>
-          {n > 0 && (
+          {!chatExpanded && (
             <TileGrid
-              open={s.openPanels}
+              open={s.openPanels.length > 0 ? s.openPanels : ORDER}
               deliverables={s.deliverables}
               cols={n <= 1 ? 1 : 2}
               onMaximize={setModal}
               onClose={orch.togglePanel}
+              placeholder={s.openPanels.length === 0}
             />
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChatMessage, ChatAction } from '../types'
+import { Icon } from './Icon'
 
 export function ChatPanel({
   messages,
@@ -8,6 +9,8 @@ export function ChatPanel({
   live = false,
   onSend,
   sending = false,
+  expanded = false,
+  onToggleExpand,
 }: {
   messages: ChatMessage[]
   pendingActions: ChatAction[] | null
@@ -15,6 +18,8 @@ export function ChatPanel({
   live?: boolean
   onSend?: (text: string) => void
   sending?: boolean
+  expanded?: boolean
+  onToggleExpand?: () => void
 }) {
   const threadRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -46,7 +51,14 @@ export function ChatPanel({
           <div className="text-[14px] font-medium leading-none">Marquee</div>
           <div className="text-[11px] text-inkSoft leading-none mt-1">{live ? 'live · connected' : 'your event planner'}</div>
         </div>
-        <span className="bulbs ml-auto"><i /><i /><i /></span>
+        <button
+          onClick={onToggleExpand}
+          className="tbtn ml-auto"
+          title={expanded ? 'Show dashboard cards' : 'Expand chat'}
+          aria-label={expanded ? 'Show dashboard cards' : 'Expand chat'}
+        >
+          <Icon name={expanded ? 'minimize' : 'maximize'} size={14} />
+        </button>
       </div>
       <div ref={threadRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((m, i) => (

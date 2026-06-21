@@ -12,12 +12,13 @@ import { getIntegrations } from '../integrations'
 import { demoScript, type Step, type Produce } from './demoScript'
 import type {
   Phase, ProfileStatus, EventProfile, ChatMessage, ChatAction, DeliverableKey,
-  ArizeSpan, BrandKit, SiteResult, EmailDraft,
+  ArizeSpan, BrandKit, SiteResult, EmailDraft, LocationInfo,
 } from '../types'
+import { cleanLocationQuery, isMappableLocation } from '../lib/maps'
 
 interface Dispatcher { stat: 'idle' | 'active' | 'done'; intent: string; node: string; log: string[] }
 interface BbLine { text: string; tone: 'ok' | 'warn' | 'muted' }
-export interface Deliverables { branding?: BrandKit; website?: SiteResult; outreach?: EmailDraft[] }
+export interface Deliverables { branding?: BrandKit; website?: SiteResult; location?: LocationInfo; outreach?: EmailDraft[] }
 
 export interface OrchestratorState {
   idx: number
@@ -85,12 +86,21 @@ export function useOrchestrator(): Orchestrator {
     if (kind === 'branding') {
       st.deliverables.branding = await ix.brand.generateBrandKit(st.profile)
       openPanel('branding')
+    } else if (kind === 'website-loading') {
+      st.deliverables.website = { url: '', eyebrow: '…', title: 'Building…', subtitle: 'Generating your registration site', loading: true }
+      openPanel('website')
     } else if (kind === 'website') {
       const site = await ix.deploy.buildAndDeploy(st.profile, st.deliverables.branding!)
       st.deliverables.website = site
       await ix.memory.set('artifacts.site_url', 'https://' + site.url)
       st.profile = await ix.memory.getProfile()
       openPanel('website')
+    } else if (kind === 'location') {
+      const raw = st.profile.event?.location
+      if (raw && isMappableLocation(raw)) {
+        st.deliverables.location = { label: raw, query: cleanLocationQuery(raw) }
+        openPanel('location')
+      }
     } else if (kind === 'slack') {
       const r = await ix.browserbase.provisionSlack(st.profile)
       st.bbStatus = 'done'
@@ -108,6 +118,9 @@ export function useOrchestrator(): Orchestrator {
           { text: '→ run continues (no crash)', tone: 'muted' },
         ]
       }
+    } else if (kind === 'outreach-loading') {
+      st.deliverables.outreach = [{ to: '…', subject: 'Drafting sponsor emails…', body: '' }]
+      openPanel('outreach')
     } else if (kind === 'outreach') {
       st.deliverables.outreach = await ix.outreach.draftSponsorEmails(st.profile)
       openPanel('outreach')
