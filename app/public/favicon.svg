@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#CC785C"/>
+  <!-- Left stem up, diagonal to center peak (upper), diagonal down, right stem -->
+  <path d="M12 46 V18 L20 18 L32 34 L44 18 L52 18 V46 H46 V28 L34 44 H30 L18 28 V46 Z" fill="#FBF9F4"/>
+</svg>
