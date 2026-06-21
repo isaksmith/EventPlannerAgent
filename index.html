@@ -3,586 +3,478 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>OrchestrateAI — desktop platform (mock prototype)</title>
+<title>Marquee — plan your event by chat</title>
+<link rel="icon" type="image/jpeg" href="assets/marquee-scallop.jpg" />
 
 <!--
   ============================================================================
-  OrchestrateAI — MOCK PROTOTYPE  (front-end only, everything is faked)
+  MARQUEE — MOCK PROTOTYPE  (front-end only, everything is faked)
   ----------------------------------------------------------------------------
-  This is a VISUAL SKELETON / TEMPLATE for the team. It is NOT the real product.
-  Every "integration" is mocked in the MockIntegrations namespace near the
-  bottom of this file. Each mock fn is marked with:  // TODO[teammate]: ...
-  To make it real: find the mock fn, replace its body with the real call.
+  Skeleton/template for the team. NOT the real product. Every integration is
+  mocked in MockIntegrations (bottom of file), each marked // TODO[teammate].
 
-  ARCHITECTURE (current decision):
-    • Desktop platform. The user talks to Sai in the on-screen CONSOLE.
-    • NO Poke. Sai owns the conversation/intent directly.
-    • The text/SMS/iMessage channel is a LATER optional layer (not built yet).
-  See docs/superpowers/specs/2026-06-20-orchestrateai-mock-prototype-design.md
+  BRAND: Marquee — Anthropic-inspired light theme (warm ivory + coral).
+  UX: chat-first tiling window manager. Sai chat is the whole experience and
+  full-width by default; deliverables (Branding / Website / Outreach) appear as
+  EQUAL-SIZED tiles only when finished, wrapping into rows (never sideways
+  scroll); each tile has a "Maximize" -> fullscreen with dimmed backdrop. Infra
+  hides behind "Behind the scenes". No Poke. No Pika (Midjourney makes assets).
   ============================================================================
 -->
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          ink:    '#0a0e1a',
-          panel:  '#121829',
-          panel2: '#0e1422',
-          line:   '#243049',
-          cyan:    '#22d3ee',
-          violet:  '#8b5cf6',
-          lime:    '#a3e635',
-          amber:   '#fbbf24',
-          rose:    '#fb7185',
-        },
-        fontFamily: { mono: ['ui-monospace','SFMono-Regular','Menlo','monospace'] },
-      }
-    }
-  }
+  tailwind.config = { theme: { extend: {
+    colors: {
+      canvas:'#F2EEE5', surface:'#FBF9F4', surface2:'#F1EBDF', ink:'#1B1A17', inkSoft:'#6E6A63',
+      line:'#E5DFD2', coral:'#CC785C', coralDeep:'#B05E40', brick:'#B2553B',
+      olive:'#7E8C57', ochre:'#BC8A2E', clay:'#9A6A4F', coralTint:'#F6E6DE',
+    },
+    fontFamily: {
+      display:['Fraunces','Georgia','serif'],
+      sans:['"Hanken Grotesk"','ui-sans-serif','system-ui','sans-serif'],
+      mono:['"JetBrains Mono"','ui-monospace','monospace'],
+    },
+  } } }
 </script>
 <style>
   html,body{height:100%}
-  body{background:radial-gradient(1200px 600px at 70% -10%, #10203a 0, transparent 60%), #060912;}
-  ::-webkit-scrollbar{width:8px;height:8px}
-  ::-webkit-scrollbar-thumb{background:#243049;border-radius:8px}
-  ::-webkit-scrollbar-track{background:transparent}
-  .glow{box-shadow:0 0 0 1px rgba(34,211,238,.25), 0 0 24px -6px rgba(34,211,238,.45)}
-  .pulse-dot{animation:pulse 1.2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  body{background:#F2EEE5; color:#1B1A17; font-family:'Hanken Grotesk',sans-serif; overflow:hidden}
+  body::before{content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:linear-gradient(rgba(242,238,229,.86),rgba(242,238,229,.94)), url('assets/marquee-bg.jpg') center/cover fixed;}
+  ::selection{background:#CC785C; color:#FBF9F4}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#ddd5c4;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+  .font-display{font-family:'Fraunces',serif}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .soft{box-shadow:0 1px 2px rgba(27,26,23,.04), 0 14px 34px -22px rgba(27,26,23,.30)}
+  .glow{outline:1.5px solid rgba(204,120,92,.5); box-shadow:0 0 0 4px rgba(204,120,92,.09)}
+  .pulse-dot{animation:pulse 1.3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   .fade-in{animation:fade .35s ease both}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .panel-active{outline:1px solid rgba(34,211,238,.55); box-shadow:0 0 30px -10px rgba(34,211,238,.5)}
+  .tile-in{animation:tilein .42s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes tilein{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
   .scanline{background:linear-gradient(transparent 0,transparent 95%,rgba(34,211,238,.06) 100%);background-size:100% 4px}
+
+  #stage{height:calc(100vh - 116px); min-height:420px}
+  #chatCol{transition:flex-basis .35s cubic-bezier(.2,.7,.2,1)}
+  #tileGrid{display:grid; gap:14px; grid-auto-rows:minmax(0,1fr)}
+
+  .chip{display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:5px 11px; border-radius:9999px;
+        border:1px solid #E0D9CB; color:#8A857B; background:#FBF9F4; transition:.15s; cursor:pointer}
+  .chip:hover{border-color:#cdb9a6}
+  .chip-on{background:rgba(204,120,92,.12); border-color:rgba(204,120,92,.5); color:#9c4e30}
+
+  .tile{display:flex; flex-direction:column; min-height:0; overflow:hidden}
+  .tile-head{display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid #ece5d8; flex:none}
+  .tbtn{height:24px;width:24px;border-radius:6px;color:#8A857B;border:1px solid #E5DFD2;line-height:1;font-size:12px;background:#FBF9F4}
+  .tbtn:hover{color:#1B1A17;background:#F1EBDF}
+  .tile-body{flex:1; min-height:0; overflow:hidden; position:relative}
+  .swatch{height:34px;border-radius:8px;border:1px solid rgba(27,26,23,.08)}
+  /* marquee bulb dots */
+  .bulbs{display:inline-flex;gap:4px}
+  .bulbs i{width:5px;height:5px;border-radius:50%;background:#CC785C;display:block;opacity:.85}
 </style>
 </head>
-<body class="text-slate-200 font-sans antialiased">
+<body class="font-sans antialiased text-ink">
 
 <!-- ================= TOP BAR ================= -->
-<header class="border-b border-line/70 bg-ink/80 backdrop-blur sticky top-0 z-30">
+<header class="border-b border-line bg-canvas/80 backdrop-blur sticky top-0 z-30">
   <div class="max-w-[1500px] mx-auto px-4 py-3 flex items-center gap-4">
     <div class="flex items-center gap-2.5">
-      <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan to-violet grid place-items-center font-bold text-ink">O</div>
+      <!-- marquee sign mark -->
+      <svg width="32" height="28" viewBox="0 0 32 28" aria-hidden="true">
+        <path d="M10 7 L16 2 L22 7" fill="none" stroke="#CC785C" stroke-width="2" stroke-linecap="round"/>
+        <rect x="3" y="7" width="26" height="15" rx="4" fill="#CC785C"/>
+        <circle cx="10" cy="14.5" r="2" fill="#FBF9F4"/><circle cx="16" cy="14.5" r="2" fill="#FBF9F4"/><circle cx="22" cy="14.5" r="2" fill="#FBF9F4"/>
+      </svg>
       <div>
-        <div class="font-semibold tracking-tight leading-none">OrchestrateAI</div>
-        <div class="text-[11px] text-slate-500 leading-none mt-1">desktop platform · mock prototype · everything is faked</div>
+        <div class="font-display text-[19px] font-semibold tracking-tight leading-none">Marquee</div>
+        <div class="text-[11px] text-inkSoft leading-none mt-1">plan your whole event by chat</div>
       </div>
     </div>
-
     <div class="ml-auto flex items-center gap-2">
-      <span id="phaseLabel" class="text-xs text-slate-400 mr-1 hidden sm:block">Phase 0 · Initiation</span>
-      <button id="resetBtn"  class="px-3 py-1.5 rounded-md text-sm border border-line text-slate-300 hover:bg-panel">Reset</button>
-      <button id="autoBtn"   class="px-3 py-1.5 rounded-md text-sm border border-line text-slate-300 hover:bg-panel">▶ Auto-play</button>
-      <button id="nextBtn"   class="px-4 py-1.5 rounded-md text-sm font-medium bg-cyan text-ink hover:brightness-110">Next ▸</button>
+      <span class="text-[10px] uppercase tracking-wider text-inkSoft/70 mr-1 hidden md:block">demo</span>
+      <button id="resetBtn" class="px-3 py-1.5 rounded-lg text-sm border border-line text-inkSoft hover:bg-surface2">Reset</button>
+      <button id="autoBtn"  class="px-3 py-1.5 rounded-lg text-sm border border-line text-inkSoft hover:bg-surface2">▶ Auto-play</button>
+      <button id="nextBtn"  class="px-4 py-1.5 rounded-lg text-sm font-medium text-surface" style="background:#B05E40">Next ▸</button>
     </div>
   </div>
-  <!-- phase rail -->
-  <div class="max-w-[1500px] mx-auto px-4 pb-3">
-    <div id="phaseRail" class="flex items-center gap-1 text-[11px]"></div>
+  <div class="max-w-[1500px] mx-auto px-4 pb-3 flex items-center gap-3">
+    <span id="statusPill" class="text-[11px] px-2.5 py-1 rounded-full border border-line bg-surface2 text-inkSoft shrink-0">Getting started</span>
+    <div class="h-4 w-px bg-line hidden sm:block"></div>
+    <div id="chips" class="flex items-center gap-2 flex-wrap"></div>
+    <span id="chipsHint" class="text-[11px] text-inkSoft/80">Your branding, website &amp; outreach appear here as they're ready.</span>
+    <button id="btsBtn" class="ml-auto shrink-0 text-[12px] px-3 py-1.5 rounded-lg border border-line text-inkSoft hover:bg-surface2 flex items-center gap-1.5">⚙ Behind the scenes</button>
   </div>
 </header>
 
-<!-- ================= MAIN SPLIT ================= -->
-<main class="max-w-[1500px] mx-auto px-4 py-5 grid grid-cols-12 gap-5">
+<!-- ================= STAGE ================= -->
+<main class="max-w-[1500px] mx-auto px-4 py-3">
+  <div id="stage" class="flex gap-4">
 
-  <!-- ---------- LEFT: SAI CONSOLE (desktop conversation surface) ---------- -->
-  <section class="col-span-12 lg:col-span-4">
-    <div class="sticky top-[110px]">
-      <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-2">
-        <span class="h-1.5 w-1.5 rounded-full bg-lime"></span> Sai console · where you talk to the platform
-      </div>
-      <!-- desktop app window -->
-      <div id="panel-console" class="rounded-xl border border-line bg-panel2 overflow-hidden transition">
-        <!-- window title bar -->
-        <div class="px-3 py-2 border-b border-line/60 flex items-center gap-2 bg-panel">
-          <span class="h-3 w-3 rounded-full bg-rose/70"></span>
-          <span class="h-3 w-3 rounded-full bg-amber/70"></span>
-          <span class="h-3 w-3 rounded-full bg-lime/70"></span>
-          <div class="ml-2 flex items-center gap-2">
-            <div class="h-6 w-6 rounded-md bg-gradient-to-br from-cyan to-violet grid place-items-center text-ink text-[11px] font-bold">S</div>
-            <div>
-              <div class="text-[13px] font-medium leading-none">Sai</div>
-              <div class="text-[10px] text-slate-500 leading-none mt-0.5">orchestrator · conversation</div>
-            </div>
+    <!-- CHAT -->
+    <div id="chatCol" class="h-full" style="flex:0 0 100%">
+      <div class="rounded-2xl border border-line bg-surface overflow-hidden soft h-full flex flex-col">
+        <!-- scallop canopy -->
+        <div class="h-12 flex-none bg-cover" style="background-image:linear-gradient(to bottom, rgba(251,249,244,0) 35%, #FBF9F4 100%), url('assets/marquee-scallop.jpg'); background-position:center 28%"></div>
+        <div class="px-4 py-3 border-b border-line flex items-center gap-3 -mt-2">
+          <div class="h-9 w-9 rounded-full grid place-items-center text-surface font-semibold" style="background:#CC785C">S</div>
+          <div>
+            <div class="text-[14px] font-medium leading-none">Sai</div>
+            <div class="text-[11px] text-inkSoft leading-none mt-1">your event planner</div>
           </div>
-          <span class="ml-auto text-[10px] mono text-slate-600">desktop</span>
+          <span class="bulbs ml-auto"><i></i><i></i><i></i></span>
         </div>
-        <!-- conversation thread -->
-        <div id="consoleThread" class="h-[520px] overflow-y-auto px-3 py-3 space-y-2"></div>
-        <!-- gate actions / input -->
-        <div id="consoleActions" class="px-3 py-2.5 border-t border-line/60 min-h-[56px] flex flex-wrap gap-2 items-center"></div>
-      </div>
-      <div class="text-[10.5px] text-slate-600 mt-2 mono leading-relaxed">
-        SMS / iMessage is a later layer — for now the conversation lives here on the desktop.
-      </div>
-    </div>
-  </section>
-
-  <!-- ---------- RIGHT: COCKPIT ---------- -->
-  <section class="col-span-12 lg:col-span-8 space-y-5">
-
-    <!-- row: Sai / Redis / Tiers -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-      <!-- Sai dispatcher (internals) -->
-      <div id="panel-sai" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Simular Sai <span class="text-slate-500 font-normal">· dispatcher</span></h3>
-          <span id="sai-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">idle</span>
-        </div>
-        <div class="space-y-2 text-xs">
-          <div><span class="text-slate-500">intent:</span> <span id="sai-intent" class="font-mono text-cyan">—</span></div>
-          <div><span class="text-slate-500">state node:</span> <span id="sai-node" class="font-mono text-violet">init</span></div>
-          <div class="text-slate-500">activity</div>
-          <div id="sai-log" class="font-mono text-[11px] space-y-1 text-slate-400 max-h-24 overflow-y-auto"></div>
-        </div>
-      </div>
-
-      <!-- Redis -->
-      <div id="panel-redis" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Redis <span class="text-slate-500 font-normal">· event profile</span></h3>
-          <span id="redis-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">empty</span>
-        </div>
-        <pre id="redis-json" class="font-mono text-[10.5px] leading-relaxed text-slate-300 max-h-40 overflow-y-auto bg-panel2 rounded-lg p-2.5 border border-line/60"></pre>
-      </div>
-
-      <!-- Autonomy tiers -->
-      <div id="panel-tiers" class="rounded-xl border border-line bg-panel p-4 transition">
-        <h3 class="text-sm font-semibold mb-3">Autonomy calibration</h3>
-        <div class="space-y-2">
-          <div id="tier-1" class="rounded-lg border border-line p-2.5 transition">
-            <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full bg-lime"></span> Tier 1 · Auto</div>
-            <div class="text-[10px] text-slate-500 mt-1">reversible · no money · no relationships → just runs</div>
-          </div>
-          <div id="tier-2" class="rounded-lg border border-line p-2.5 transition">
-            <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full bg-amber"></span> Tier 2 · Confirm plan</div>
-            <div class="text-[10px] text-slate-500 mt-1">sets direction → pause once for APPROVE</div>
-          </div>
-          <div id="tier-3" class="rounded-lg border border-line p-2.5 transition">
-            <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full bg-rose"></span> Tier 3 · Human handoff</div>
-            <div class="text-[10px] text-slate-500 mt-1">money / real people / mass-send → draft only, ask first</div>
-          </div>
-        </div>
+        <div id="chatThread" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3"></div>
+        <div id="chatActions" class="px-4 py-3 border-t border-line min-h-[60px] flex flex-wrap gap-2 items-center flex-none"></div>
       </div>
     </div>
 
-    <!-- row: Creative / Deploy -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-      <!-- Creative pipeline -->
-      <div id="panel-creative" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Creative pipeline <span class="text-slate-500 font-normal">· Midjourney / Pika</span></h3>
-          <span id="creative-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">waiting</span>
-        </div>
-        <div class="grid grid-cols-4 gap-2">
-          <div id="cre-logo" class="aspect-square rounded-lg border border-line bg-panel2 grid place-items-center text-[10px] text-slate-600">logo</div>
-          <div id="cre-c1" class="aspect-square rounded-lg border border-line bg-panel2"></div>
-          <div id="cre-c2" class="aspect-square rounded-lg border border-line bg-panel2"></div>
-          <div id="cre-c3" class="aspect-square rounded-lg border border-line bg-panel2"></div>
-        </div>
-        <div id="cre-bg" class="mt-2 h-16 rounded-lg border border-line bg-panel2 grid place-items-center text-[10px] text-slate-600">background graphic</div>
-        <div id="cre-pika" class="mt-2 h-9 rounded-lg border border-line bg-panel2 grid place-items-center text-[10px] text-slate-600">Pika promo clip</div>
-      </div>
-
-      <!-- Code + Deploy -->
-      <div id="panel-deploy" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Code + Deploy <span class="text-slate-500 font-normal">· Claude Code → Vercel</span></h3>
-          <span id="deploy-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">waiting</span>
-        </div>
-        <div class="rounded-lg border border-line overflow-hidden bg-white relative h-[150px]">
-          <div class="absolute inset-x-0 top-0 h-5 bg-slate-200 flex items-center gap-1 px-2 z-10">
-            <span class="h-2 w-2 rounded-full bg-rose"></span><span class="h-2 w-2 rounded-full bg-amber"></span><span class="h-2 w-2 rounded-full bg-lime"></span>
-            <span id="deploy-url" class="ml-2 text-[9px] text-slate-500 font-mono truncate">building…</span>
-          </div>
-          <div id="site-preview" class="absolute inset-0 top-5 grid place-items-center text-slate-400 text-xs">
-            <div id="deploy-log" class="font-mono text-[10px] text-slate-500 space-y-0.5 p-2 w-full"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- row: Browserbase / Outreach / Arize -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-      <!-- Browserbase -->
-      <div id="panel-browserbase" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Browserbase <span class="text-slate-500 font-normal">· headless</span></h3>
-          <span id="bb-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">waiting</span>
-        </div>
-        <div id="bb-list" class="space-y-1.5 text-[11px] font-mono text-slate-400"></div>
-      </div>
-
-      <!-- Outreach -->
-      <div id="panel-outreach" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Outreach <span class="text-slate-500 font-normal">· draft-only</span></h3>
-          <span id="out-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">waiting</span>
-        </div>
-        <div id="out-list" class="space-y-2"></div>
-      </div>
-
-      <!-- Arize -->
-      <div id="panel-arize" class="rounded-xl border border-line bg-panel p-4 transition">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold">Arize AI <span class="text-slate-500 font-normal">· trace</span></h3>
-          <span id="arize-stat" class="text-[10px] px-2 py-0.5 rounded-full bg-panel2 text-slate-500 border border-line">0 spans</span>
-        </div>
-        <div id="arize-list" class="space-y-1 text-[10px] font-mono max-h-40 overflow-y-auto"></div>
-        <div class="mt-2 pt-2 border-t border-line/60 flex justify-between text-[10px] text-slate-500">
-          <span>total</span><span id="arize-total">0 ms · $0.000</span>
-        </div>
-      </div>
-    </div>
-
-  </section>
+    <!-- TILE GRID -->
+    <div id="tileGrid" class="h-full flex-1" style="display:none"></div>
+  </div>
 </main>
 
-<footer class="max-w-[1500px] mx-auto px-4 py-6 text-[11px] text-slate-600">
-  Skeleton / template only. Each panel is a mocked integration — replace
-  <code class="text-slate-500">MockIntegrations.*</code> with the real call to build the product.
-  No Poke; Sai owns the conversation. SMS/iMessage is a later layer.
-</footer>
+<!-- ================= MAXIMIZE MODAL ================= -->
+<div id="modal" class="fixed inset-0 z-[60] opacity-0 pointer-events-none transition-opacity duration-200">
+  <div id="modalScrim" class="absolute inset-0" style="background:rgba(27,26,23,.45)"></div>
+  <div class="absolute inset-0 flex items-center justify-center p-4 md:p-8">
+    <div class="relative w-full max-w-5xl h-[88vh] bg-surface border border-line rounded-2xl overflow-hidden flex flex-col soft">
+      <div class="px-5 py-3 border-b border-line flex items-center gap-2 flex-none bg-surface2">
+        <h3 id="modalTitle" class="text-sm font-semibold"></h3>
+        <button id="modalClose" class="ml-auto h-8 w-8 rounded-md border border-line text-inkSoft hover:bg-surface2">×</button>
+      </div>
+      <div id="modalBody" class="flex-1 min-h-0 overflow-y-auto p-5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BEHIND-THE-SCENES DRAWER ================= -->
+<div id="scrim" class="fixed inset-0 z-40 opacity-0 pointer-events-none transition-opacity duration-200" style="background:rgba(27,26,23,.4)"></div>
+<aside id="drawer" class="fixed top-0 right-0 h-full w-[440px] max-w-[92vw] bg-canvas border-l border-line z-50 translate-x-full overflow-y-auto transition-transform duration-300">
+  <div class="sticky top-0 bg-canvas/95 backdrop-blur px-4 py-3 border-b border-line flex items-center gap-2">
+    <div><div class="text-sm font-semibold">Behind the scenes</div><div class="text-[11px] text-inkSoft">the systems Sai is driving — for transparency</div></div>
+    <button id="btsClose" class="ml-auto h-8 w-8 rounded-md border border-line text-inkSoft hover:bg-surface2">×</button>
+  </div>
+  <div class="p-4 space-y-4">
+    <div class="rounded-xl border border-line bg-surface p-4">
+      <h3 class="text-sm font-semibold mb-3">Progress</h3>
+      <div id="phaseRail" class="flex flex-wrap items-center gap-1 text-[11px]"></div>
+    </div>
+    <div id="panel-sai" class="rounded-xl border border-line bg-surface p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Simular Sai <span class="text-inkSoft font-normal">· dispatcher</span></h3>
+        <span id="sai-stat" class="text-[10px] mono px-2 py-0.5 rounded-full bg-surface2 text-inkSoft border border-line">idle</span>
+      </div>
+      <div class="space-y-2 text-xs">
+        <div><span class="text-inkSoft">intent:</span> <span id="sai-intent" class="mono text-coralDeep">—</span></div>
+        <div><span class="text-inkSoft">state node:</span> <span id="sai-node" class="mono text-clay">init</span></div>
+        <div class="text-inkSoft pt-1">activity</div>
+        <div id="sai-log" class="mono text-[11px] space-y-1 text-inkSoft max-h-28 overflow-y-auto"></div>
+      </div>
+    </div>
+    <div id="panel-redis" class="rounded-xl border border-line bg-surface p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Redis <span class="text-inkSoft font-normal">· event profile</span></h3>
+        <span id="redis-stat" class="text-[10px] mono px-2 py-0.5 rounded-full bg-surface2 text-inkSoft border border-line">empty</span>
+      </div>
+      <pre id="redis-json" class="mono text-[10.5px] leading-relaxed text-ink max-h-44 overflow-y-auto bg-surface2 rounded-lg p-2.5 border border-line"></pre>
+    </div>
+    <div id="panel-browserbase" class="rounded-xl border border-line bg-surface p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Browserbase <span class="text-inkSoft font-normal">· headless</span></h3>
+        <span id="bb-stat" class="text-[10px] mono px-2 py-0.5 rounded-full bg-surface2 text-inkSoft border border-line">waiting</span>
+      </div>
+      <div id="bb-list" class="space-y-1.5 text-[11px] mono text-inkSoft"></div>
+    </div>
+    <div id="panel-arize" class="rounded-xl border border-line bg-surface p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Arize AI <span class="text-inkSoft font-normal">· trace</span></h3>
+        <span id="arize-stat" class="text-[10px] mono px-2 py-0.5 rounded-full bg-surface2 text-inkSoft border border-line">0 spans</span>
+      </div>
+      <div id="arize-list" class="space-y-1 text-[10px] mono max-h-40 overflow-y-auto"></div>
+      <div class="mt-2 pt-2 border-t border-line flex justify-between text-[10px] text-inkSoft"><span>total</span><span id="arize-total" class="mono">0 ms · $0.000</span></div>
+    </div>
+    <div id="panel-tiers" class="rounded-xl border border-line bg-surface p-4">
+      <h3 class="text-sm font-semibold mb-3">How Sai decides <span class="text-inkSoft font-normal">· autonomy</span></h3>
+      <div class="space-y-2">
+        <div id="tier-1" class="rounded-lg border border-line p-2.5">
+          <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full" style="background:#7E8C57"></span> Tier 1 · Auto</div>
+          <div class="text-[10px] text-inkSoft mt-1">reversible · no money · no relationships → just runs</div>
+        </div>
+        <div id="tier-2" class="rounded-lg border border-line p-2.5">
+          <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full" style="background:#BC8A2E"></span> Tier 2 · Confirm plan</div>
+          <div class="text-[10px] text-inkSoft mt-1">sets direction → pause once for approval</div>
+        </div>
+        <div id="tier-3" class="rounded-lg border border-line p-2.5">
+          <div class="flex items-center gap-2 text-xs font-medium"><span class="h-2 w-2 rounded-full" style="background:#B2553B"></span> Tier 3 · Human handoff</div>
+          <div class="text-[10px] text-inkSoft mt-1">money / real people / mass-send → draft only, ask first</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
 
 <script>
 /* ============================================================================
-   MOCK INTEGRATIONS — the "seam map".
-   Each function below is FAKE. To build the real product, replace the body of
-   the corresponding function with the real integration call. Signatures and the
-   shape of returned data are the contract the rest of the UI depends on.
-
-   NOTE: Poke is intentionally gone. Sai owns the conversation directly. A real
-   SMS/iMessage transport can be added later as a thin layer in front of Sai.
+   MOCK INTEGRATIONS — the "seam map" (replace bodies with real calls).
+   No Poke (Sai owns conversation). No Pika (Midjourney makes all assets).
    ============================================================================ */
 const MockIntegrations = {
-  // TODO[teammate · Simular Sai]: replace with real intent + Hyperframe state machine.
-  //   Sai also EMITS the conversation shown in the console (no Poke involved).
-  sai: {
-    classifyIntent(text){ return text.trim().toUpperCase()==='PLAN' ? 'START_PLAN' : 'INTERVIEW_REPLY'; },
-    nextNode(node){ return node; },
-    say(text){ /* fake: the console renders Sai's message directly */ return {ok:true}; },
-  },
-
-  // TODO[teammate · Redis]: replace with real session store keyed by session id.
-  redis: { _db:{}, set(path,val){ this._db[path]=val; return true; }, get(path){ return this._db[path]; } },
-
-  // TODO[teammate · Midjourney/Pika]: replace with real async asset generation jobs.
-  midjourney: { generate(seed){ return {logo:true, palette:seed.colors, bg:true}; } },
-  pika:       { generate(){ return {clipUrl:'mock://promo.mp4'}; } },
-
-  // TODO[teammate · Claude Code / Opencode → Vercel]: replace with real codegen + deploy.
-  claudeCode: { buildAndDeploy(profile){ return {url:'https://berkeley-ai-hack.vercel.app'}; } },
-
-  // TODO[teammate · Browserbase]: replace with real headless provisioning. Keep the
-  //   graceful-failure contract: on error, return {ok:false, fallback:'...'} — never throw.
-  browserbase: {
+  sai: { classifyIntent(t){ return /plan|event/i.test(t)?'START_PLAN':'INTERVIEW_REPLY'; }, nextNode(n){ return n; }, say(t){ return {ok:true}; } }, // TODO[teammate · Simular Sai]
+  redis: { _db:{}, set(p,v){ this._db[p]=v; return true; }, get(p){ return this._db[p]; } }, // TODO[teammate · Redis]
+  midjourney: { generate(seed){ return { logo:true, palette:seed.colors, images:2, background:true, motion:true }; } }, // TODO[teammate · Midjourney]
+  claudeCode: { buildAndDeploy(profile){ return {url:'https://berkeley-ai-hack.vercel.app'}; } }, // TODO[teammate · Claude Code→Vercel]
+  browserbase: { // TODO[teammate · Browserbase] — graceful fallback, never throw
     provisionSlack(){ return {ok:true, channels:['#general','#help-desk','#team-formation','#sponsors','#announcements']}; },
     createDevpost(){ return {ok:false, fallback:'Devpost wizard DOM changed — manual guide written'}; },
   },
-
-  // TODO[teammate · drafting]: replace with real draft generation. MUST stay draft-only.
-  outreach: { draftSponsorEmails(){ return [
-    {to:'partnerships@anthropic.com', subj:'Anthropic × Berkeley AI Hackathon 2026'},
-    {to:'devrel@openai.com',          subj:'Sponsor 200 builders at UC Berkeley'},
-    {to:'community@vercel.com',        subj:'Vercel as deploy partner — Berkeley AI Hack'},
+  outreach: { draftSponsorEmails(){ return [ // TODO[teammate · drafting] — stays draft-only
+    {to:'partnerships@anthropic.com', subj:'Anthropic × Berkeley AI Hackathon 2026', body:"Hi Anthropic team,\n\nWe're hosting 200 student builders at UC Berkeley in 6 weeks and would love Anthropic as a headline sponsor — API credits + a workshop slot. Quick call this week?\n\nThanks,\nMichael"},
+    {to:'devrel@openai.com', subj:'Sponsor 200 builders at UC Berkeley', body:"Hi OpenAI DevRel,\n\nBerkeley AI Hackathon 2026 — 200 undergrad & grad builders, in person. Would you sponsor credits and send a mentor? Happy to share the prospectus.\n\nBest,\nMichael"},
+    {to:'community@vercel.com', subj:'Vercel as deploy partner — Berkeley AI Hack', body:"Hi Vercel community team,\n\nWe're deploying every hack on Vercel and would love you as our official deploy partner — swag + Pro credits for participants. Interested?\n\nCheers,\nMichael"},
   ]; } },
-
-  // TODO[teammate · Arize]: replace with real tracing/observability spans.
-  arize: { span(node,ms,cost){ return {node,ms,cost}; } },
-
-  // LATER[optional]: SMS/iMessage transport that proxies the console to a phone.
-  //   Not needed for the desktop MVP. When built, it forwards user texts → sai,
-  //   and sai.say() → outbound SMS.
-  // sms: { send(text){ /* future */ } },
+  arize: { span(node,ms,cost){ return {node,ms,cost}; } }, // TODO[teammate · Arize]
 };
 
-/* ============================================================================
-   SCRIPTED DEMO  (one canned event). Each step declares what changes; the
-   runner applies whichever fields are present. Steps with `gate:true` pause
-   until the human acts in the console — that's a human-in-the-loop gate.
-   ============================================================================ */
-const BRAND = { colors:['#0a1f44','#22d3ee','#8b5cf6'] }; // the EVENT's brand (navy/cyan)
+const BRAND = { vibe:'retro-futuristic · navy/cyan', palette:[
+  {hex:'#0A1F44', name:'Midnight Navy'},{hex:'#22D3EE', name:'Neon Cyan'},{hex:'#8B5CF6', name:'Signal Violet'},{hex:'#0E1B2E', name:'Deep Space'},
+] };
+const SITE_URL = 'berkeley-ai-hack.vercel.app';
 
 const STEPS = [
-  // ---- PHASE 0 — Initiation ----
-  { phase:0, msg:{from:'user', text:'PLAN'} },
-  { phase:0, sai:{stat:'active', intent:'START_PLAN', node:'session.create', log:'new session → session:demo-001'},
-    redisInit:true, arize:{node:'intent.classify', ms:180, cost:0.0009} },
-  { phase:0, msg:{from:'sai', text:"Hi — I'm Sai, your event orchestrator. I'll ask ~8 quick questions, then show you a plan to approve. Ready when you are."} },
+  { phase:0, msg:{from:'user', text:'I want to plan an event'} },
+  { phase:0, sai:{stat:'active', intent:'START_PLAN', node:'session.create', log:'new session → session:demo-001'}, redisInit:true, arize:{node:'intent.classify', ms:180, cost:0.0009} },
+  { phase:0, msg:{from:'sai', text:"Love it — I'll handle the whole thing. I'll ask a few quick questions, then build it all for you. Ready?"} },
 
-  // ---- PHASE 1 — Interview ----
   { phase:1, msg:{from:'sai', text:'First — what are we building? (name + type)'} , sai:{node:'interview.identity', log:'branch → identity'} },
   { phase:1, msg:{from:'user', text:'Berkeley AI Hackathon 2026, a hackathon'} },
-  { phase:1, redis:{path:'event.name', value:'Berkeley AI Hackathon 2026'}, redis2:{path:'event.type', value:'hackathon'},
-    arize:{node:'interview.branch', ms:240, cost:0.0011} },
-
+  { phase:1, redis:{path:'event.name', value:'Berkeley AI Hackathon 2026'}, redis2:{path:'event.type', value:'hackathon'}, arize:{node:'interview.branch', ms:240, cost:0.0011} },
   { phase:1, msg:{from:'sai', text:'Nice. When & where, and how many people?'}, sai:{node:'interview.scale'} },
   { phase:1, msg:{from:'user', text:'UC Berkeley, in person, 6 weeks out, ~200 attendees'} },
   { phase:1, redis:{path:'event.location', value:'UC Berkeley · in person'}, redis2:{path:'event.expected_attendees', value:200} },
-
   { phase:1, msg:{from:'sai', text:"Who's it for, and what's the vibe / colors?"}, sai:{node:'interview.aesthetic'} },
   { phase:1, msg:{from:'user', text:'Undergrad + grad builders. Retro-futuristic, deep navy + neon cyan'} },
-  { phase:1, redis:{path:'audience.description', value:'undergrad + grad builders'}, redis2:{path:'aesthetic.vibe', value:'retro-futuristic · navy/cyan'},
-    arize:{node:'interview.branch', ms:210, cost:0.0010} },
-
-  { phase:1, msg:{from:'sai', text:'Need a Slack + Devpost? Any sponsors to reach?'}, sai:{node:'interview.ops'} },
+  { phase:1, redis:{path:'audience.description', value:'undergrad + grad builders'}, redis2:{path:'aesthetic.vibe', value:'retro-futuristic · navy/cyan'}, arize:{node:'interview.branch', ms:210, cost:0.0010} },
+  { phase:1, msg:{from:'sai', text:'Want a Slack + Devpost, and any sponsors to reach out to?'}, sai:{node:'interview.ops'} },
   { phase:1, msg:{from:'user', text:'Yes Slack + Devpost. Sponsors: Anthropic, OpenAI, Vercel'} },
-  { phase:1, redis:{path:'ops.needs_slack', value:true}, redis2:{path:'ops.needs_devpost', value:true},
-    redis3:{path:'outreach.sponsor_targets', value:['Anthropic','OpenAI','Vercel']} },
+  { phase:1, redis:{path:'ops.needs_slack', value:true}, redis2:{path:'ops.needs_devpost', value:true}, redis3:{path:'outreach.sponsor_targets', value:['Anthropic','OpenAI','Vercel']} },
+  { phase:1, msg:{from:'sai', text:'Perfect — putting your plan together…'}, sai:{stat:'active', node:'summary.compile', log:'compiling event profile'}, arize:{node:'summary.compile', ms:520, cost:0.0024} },
 
-  { phase:1, msg:{from:'sai', text:'Got it — building your plan…'}, sai:{stat:'active', node:'summary.compile', log:'compiling event profile'},
-    arize:{node:'summary.compile', ms:520, cost:0.0024} },
-
-  // ---- PHASE 2 — Consensus gate ----
-  { phase:2, tier:2,
-    msg:{from:'sai', text:"Here's the plan:\n\nBerkeley AI Hackathon 2026 (hackathon)\nUC Berkeley · in person · ~200 ppl · 6 wks\nretro-futuristic · navy/cyan\nSlack + Devpost\nSponsors: Anthropic, OpenAI, Vercel\n\nApprove to build?"},
-    redisStatus:'awaiting_approval' },
-  { phase:2, gate:true, msg:{from:'sai', text:'Confirm to continue:', actions:[
-      {label:'APPROVE', kind:'lime', reply:'APPROVE'},
-      {label:'Change color → navy only', kind:'line', reply:'make it navy only'},
+  { phase:2, tier:2, msg:{from:'sai', text:"Here's the plan:\n\nBerkeley AI Hackathon 2026 (hackathon)\nUC Berkeley · in person · ~200 people · 6 weeks out\nLook: retro-futuristic · navy/cyan\nSlack + Devpost\nReach out to: Anthropic, OpenAI, Vercel\n\nApprove and I'll build everything."}, redisStatus:'awaiting_approval' },
+  { phase:2, gate:true, msg:{from:'sai', text:'Sound right?', actions:[
+      {label:'Approve — build it', kind:'primary', reply:'Approve'},
+      {label:'Change the colors', kind:'line', reply:'actually, navy only'},
   ]}, sai:{node:'gate.plan', log:'paused — awaiting plan approval'} },
   { phase:3, sai:{stat:'active', node:'fanout', log:'plan approved → fan out'}, redisStatus:'executing',
-    msg:{from:'sai', text:'Approved! Kicking off the build — I\'ll post progress here as I go.'} },
+    msg:{from:'sai', text:"On it! I'll build everything now and show you each piece as it's ready. Sit tight."} },
 
-  // ---- PHASE 3 — Calibrated execution ----
-  { phase:3, tier:1, msg:{from:'sai', text:'Generating branding — ~45s…'},
-    creative:'start', sai:{node:'exec.creative', log:'Midjourney + Pika jobs queued'},
-    arize:{node:'midjourney.generate', ms:4200, cost:0.0180} },
-  { phase:3, creative:'done', arize:{node:'pika.generate', ms:3100, cost:0.0220} },
+  { phase:3, tier:1, msg:{from:'sai', text:'Designing your brand identity…'}, sai:{node:'exec.creative', log:'Midjourney jobs queued (logo, palette, images, background, motion)'}, arize:{node:'midjourney.logo', ms:4200, cost:0.0180} },
+  { phase:3, reveal:'branding', msg:{from:'sai', text:'Your brand is ready — logo, colors, images and a background. Opened it on the right. 🎨 Tap “Maximize” to see everything.'}, arize:{node:'midjourney.assets', ms:3600, cost:0.0190} },
 
-  { phase:3, tier:1, msg:{from:'sai', text:'Building & deploying your site…'},
-    deploy:'build', sai:{node:'exec.deploy', log:'Claude Code: profile + assets → site'},
-    arize:{node:'claude.build', ms:6800, cost:0.0410} },
-  { phase:3, deploy:'done', arize:{node:'vercel.deploy', ms:2400, cost:0.0030},
-    redisArtifact:{path:'artifacts.site_url', value:'https://berkeley-ai-hack.vercel.app'} },
+  { phase:3, tier:1, msg:{from:'sai', text:'Now building your registration website…'}, sai:{node:'exec.deploy', log:'Claude Code: profile + assets → site → Vercel'}, arize:{node:'claude.build', ms:6800, cost:0.0410} },
+  { phase:3, reveal:'website', msg:{from:'sai', text:'Your website is live 🎉 Preview on the right — '+SITE_URL}, redisArtifact:{path:'artifacts.site_url', value:'https://'+SITE_URL}, arize:{node:'vercel.deploy', ms:2400, cost:0.0030} },
 
-  { phase:3, tier:1, msg:{from:'sai', text:'Provisioning Slack + Devpost…'},
-    bb:'slack', sai:{node:'exec.browserbase', log:'headless: Slack workspace + channels'},
-    arize:{node:'browserbase.slack', ms:5200, cost:0.0050} },
-  { phase:3, bb:'devpost-fail', sai:{log:'Devpost DOM changed → graceful fallback'},
-    arize:{node:'browserbase.devpost', ms:3800, cost:0.0040, warn:true} },
+  { phase:3, tier:1, msg:{from:'sai', text:'Setting up your community Slack…'}, bb:'slack', sai:{node:'exec.browserbase', log:'headless: Slack workspace + channels'}, arize:{node:'browserbase.slack', ms:5200, cost:0.0050} },
+  { phase:3, bb:'devpost-fail', msg:{from:'sai', text:"Slack is ready — 5 channels set up. One heads-up: I couldn't auto-create the Devpost page (their site changed), so I left you a 2-minute manual guide. Everything else is done."}, sai:{log:'Devpost DOM changed → graceful fallback'}, arize:{node:'browserbase.devpost', ms:3800, cost:0.0040, warn:true} },
 
-  { phase:3, tier:3, msg:{from:'sai', text:'Drafted 3 sponsor emails — these need your OK before anything sends.'},
-    outreach:'draft', sai:{node:'exec.outreach', log:'drafts only — NOT sent (Tier 3)'},
-    arize:{node:'outreach.draft', ms:2900, cost:0.0150} },
+  { phase:3, tier:3, reveal:'outreach', msg:{from:'sai', text:"I drafted 3 sponsor emails for you to review — on the right. I won't send anything without your OK."}, sai:{node:'exec.outreach', log:'drafts only — NOT sent (Tier 3)'}, arize:{node:'outreach.draft', ms:2900, cost:0.0150} },
 
-  // ---- PHASE 4 — High-stakes handoff ----
-  { phase:4, tier:3, gate:true,
-    msg:{from:'sai', text:'2 things need your call:\n• 3 sponsor emails ready\n• Custom domain berkeleyaihack.com — $12', actions:[
-      {label:'SEND emails', kind:'rose', reply:'SEND'},
-      {label:'BUY domain ($12)', kind:'rose', reply:'BUY'},
-      {label:'SKIP for now', kind:'line', reply:'SKIP'},
-    ]}, sai:{node:'gate.handoff', log:'paused — Tier 3 handoff'} },
+  { phase:4, tier:3, gate:true, msg:{from:'sai', text:'Two things need your call:\n• Send the 3 sponsor emails?\n• Grab the domain berkeleyaihack.com for $12?', actions:[
+      {label:'Send the emails', kind:'danger', reply:'Send them'},
+      {label:'Buy domain ($12)', kind:'danger', reply:'Buy the domain'},
+      {label:'Skip for now', kind:'line', reply:'Skip for now'},
+  ]}, sai:{node:'gate.handoff', log:'paused — Tier 3 handoff'} },
 
-  // ---- PHASE 5 — Final delivery ----
   { phase:5, sai:{stat:'done', node:'deliver', log:'run complete'}, redisStatus:'done',
-    msg:{from:'sai', text:'Done! Your event is live:\n\nSite: berkeley-ai-hack.vercel.app\nSlack: 5 channels ready\nDevpost: manual guide (DOM changed)\nBrand assets: folder link\nSponsor drafts: pending your send\n\nYou just approved. The rest assembled itself.'} },
+    msg:{from:'sai', text:"You're all set 🎉\n\n• Website: "+SITE_URL+"\n• Slack: 5 channels ready\n• Devpost: quick manual guide\n• Brand assets: saved\n• Sponsor emails: ready when you are\n\nYou answered a few questions. I did the rest."} },
 ];
 
-/* ============================================================================
-   RUNNER
-   ============================================================================ */
+/* ============================================================================ RUNNER + TILING ============================================================================ */
 const $ = id => document.getElementById(id);
 const PHASES = ['Initiation','Interview','Consensus','Execution','Handoff','Delivery'];
-let idx = -1, waiting = false, auto = false, autoTimer = null;
+const STATUS = ['Getting started','Learning about your event','Confirming the plan','Building your event','Needs your approval','All set 🎉'];
+let idx=-1, waiting=false, auto=false, autoTimer=null;
 const profile = { session_id:'session:demo-001', status:'interviewing', event:{}, audience:{}, aesthetic:{}, ops:{}, outreach:{}, artifacts:{} };
-let arizeMs = 0, arizeCost = 0;
+let arizeMs=0, arizeCost=0;
 
-function buildRail(){
-  $('phaseRail').innerHTML = PHASES.map((p,i)=>`
-    <div class="flex items-center gap-1">
-      <span data-rail="${i}" class="px-2 py-1 rounded-md border border-line text-slate-500">${i}· ${p}</span>
-      ${i<PHASES.length-1?'<span class="text-slate-700">→</span>':''}
-    </div>`).join('');
+const ORDER=['branding','website','outreach'];
+const META={ branding:{icon:'🎨',label:'Branding',title:'🎨 Your brand'}, website:{icon:'🌐',label:'Website',title:'🌐 Your website'}, outreach:{icon:'✉️',label:'Outreach',title:'✉️ Sponsor outreach'} };
+const open=new Set();
+
+function setPill(el,text,kind){
+  const map={ idle:'bg-surface2 text-inkSoft border-line', coral:'bg-coral/10 text-coralDeep border-coral/40',
+    olive:'bg-olive/15 text-olive border-olive/40', ochre:'bg-ochre/15 text-ochre border-ochre/40', brick:'bg-brick/12 text-brick border-brick/40' };
+  el.textContent=text; el.className='text-[10px] mono px-2 py-0.5 rounded-full border '+(map[kind]||map.idle);
 }
 
-function setPhase(p){
-  document.querySelectorAll('[data-rail]').forEach(el=>{
-    const i = +el.dataset.rail;
-    el.className = 'px-2 py-1 rounded-md border ' +
-      (i<p ? 'border-line text-slate-500 bg-panel2' :
-       i===p ? 'border-cyan/60 text-cyan bg-cyan/10 glow' :
-       'border-line text-slate-600');
-  });
-  $('phaseLabel').textContent = `Phase ${p} · ${PHASES[p]}`;
-}
+function swatchRow(big){ return `<div class="grid grid-cols-4 gap-2">${BRAND.palette.map(c=>`
+  <div><div class="swatch" style="background:${c.hex}${big?';height:52px':''}"></div>
+  ${big?`<div class="mono text-[10px] text-clay mt-1">${c.hex}</div><div class="text-[10px] text-inkSoft">${c.name}</div>`:''}</div>`).join('')}</div>`; }
+function siteFrame(){ return `<div class="rounded-lg border border-line overflow-hidden bg-white relative h-full min-h-[120px]">
+  <div class="absolute inset-x-0 top-0 h-5 bg-slate-200 flex items-center gap-1 px-2 z-10">
+    <span class="h-2 w-2 rounded-full" style="background:#B2553B"></span><span class="h-2 w-2 rounded-full" style="background:#BC8A2E"></span><span class="h-2 w-2 rounded-full" style="background:#7E8C57"></span>
+    <span class="ml-2 text-[9px] text-slate-500 mono truncate">${SITE_URL}</span></div>
+  <div class="absolute inset-0 top-5 text-white" style="background:linear-gradient(135deg,#0a1f44,#08111f)">
+    <div class="h-full flex flex-col items-center justify-center text-center px-3 scanline">
+      <div class="text-[8px] tracking-[0.3em] text-cyan/70">UC BERKELEY · 2026</div>
+      <div class="text-[clamp(14px,2.4vw,26px)] font-bold mt-1">Berkeley <span style="color:#22d3ee">AI</span> Hackathon</div>
+      <div class="text-[10px] text-slate-300 mt-1">200 builders · 6 weeks out · in person</div>
+      <button class="mt-2.5 text-[10px] font-semibold px-3 py-1 rounded-full" style="background:#22d3ee;color:#0a1f44">Register →</button>
+    </div></div></div>`; }
+function assetTile(label,inner){ return `<div class="rounded-lg border border-line bg-surface2 overflow-hidden"><div class="h-full grid place-items-center text-[10px] text-cyan/70 scanline" style="background:linear-gradient(120deg,#0a1f44,#08111f);min-height:64px">${inner||label}</div><div class="text-[10px] text-inkSoft px-2 py-1 border-t border-line">${label}</div></div>`; }
 
-function activate(panelId){
-  document.querySelectorAll('[id^="panel-"]').forEach(el=>el.classList.remove('panel-active'));
-  if(panelId) $(panelId)?.classList.add('panel-active');
-}
-
-function idleInput(){
-  return '<input disabled placeholder="Message Sai…  (text layer — coming later)" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2 text-[12px] text-slate-500 placeholder:text-slate-600" />';
-}
-
-function consoleMsg(from,text,actions){
-  const t = $('consoleThread');
-  const wrap = document.createElement('div');
-  wrap.className = 'fade-in flex ' + (from==='user'?'justify-end':'justify-start');
-  wrap.innerHTML = `<div class="max-w-[82%] px-3 py-2 rounded-xl text-[12.5px] whitespace-pre-line leading-snug ${
-    from==='user' ? 'bg-cyan text-ink rounded-br-sm' : 'bg-panel text-slate-200 border border-line rounded-bl-sm'}">${text}</div>`;
-  t.appendChild(wrap);
-  t.scrollTop = t.scrollHeight;
-
-  const bar = $('consoleActions');
-  if(actions){
-    bar.innerHTML = '';
-    actions.forEach(a=>{
-      const b = document.createElement('button');
-      const c = a.kind==='lime'?'bg-lime text-ink':a.kind==='rose'?'bg-rose text-ink':'border border-line text-slate-300 hover:bg-panel';
-      b.className = `px-3 py-1.5 rounded-full text-[12px] font-medium ${c}`;
-      b.textContent = a.label;
-      b.onclick = ()=>{ consoleMsg('user', a.reply); bar.innerHTML=idleInput(); waiting=false; advance(); };
-      bar.appendChild(b);
-    });
-  } else {
-    bar.innerHTML = idleInput();
+function body(key, full){
+  if(key==='branding'){
+    if(!full) return `<div class="p-3 space-y-3 h-full flex flex-col">
+        <div class="flex gap-3 items-center">
+          <div class="h-14 w-14 shrink-0 rounded-xl border border-line flex items-center justify-center font-bold text-cyan" style="background:#0a1f44"><span class="whitespace-nowrap text-sm">B<span class="text-violet">/</span>AI</span></div>
+          <div class="flex-1">${swatchRow(false)}</div>
+        </div>
+        <div class="rounded-lg border border-line scanline grid place-items-center text-[10px] text-cyan/70 flex-1 min-h-[48px]" style="background:linear-gradient(120deg,#0a1f44,#08111f)">◢◤ background graphic</div>
+        <div class="text-[10px] text-inkSoft">5 assets · Midjourney · ${BRAND.vibe}</div></div>`;
+    return `<div class="space-y-5">
+        <div class="flex gap-4 items-center">
+          <div class="h-24 w-24 rounded-2xl border border-line grid place-items-center font-bold text-cyan text-3xl" style="background:#0a1f44">B<span class="text-violet">/</span>AI</div>
+          <div><div class="text-lg font-semibold">Berkeley AI Hackathon</div><div class="text-inkSoft text-sm">${BRAND.vibe}</div><div class="text-inkSoft text-xs mt-1">Logo mark · generated by Midjourney</div></div></div>
+        <div><div class="text-sm font-semibold mb-2">Color palette</div>${swatchRow(true)}</div>
+        <div><div class="text-sm font-semibold mb-2">Brand assets</div>
+          <div class="grid grid-cols-3 gap-3" style="grid-auto-rows:110px">
+            ${assetTile('Hero image','◢◤')}${assetTile('Pattern','▦▦')}${assetTile('Background','◢◤')}${assetTile('Social card','▤')}${assetTile('Brand motion · 6s','▶')}${assetTile('Banner','▭')}
+          </div><div class="text-[11px] text-inkSoft mt-2">Images &amp; motion generated by Midjourney to one design seed for consistency.</div></div></div>`;
   }
+  if(key==='website'){
+    if(!full) return `<div class="p-3 h-full flex flex-col gap-2"><div class="flex-1 min-h-0">${siteFrame()}</div>
+        <div class="flex items-center justify-between"><span class="text-[10px] text-inkSoft">Live registration site</span>
+        <span class="text-[10px] px-2 py-0.5 rounded bg-surface2 text-clay border border-line mono">${SITE_URL}</span></div></div>`;
+    return `<div class="space-y-4"><div class="h-[42vh] min-h-[260px]">${siteFrame()}</div>
+        <div class="flex items-center gap-3"><a href="#" onclick="return false" class="text-[12px] px-3 py-1.5 rounded-md text-surface" style="background:#B05E40">Open site ↗</a><span class="mono text-[12px] text-clay">${SITE_URL}</span></div>
+        <div class="grid grid-cols-3 gap-3 text-[12px]">
+          <div class="rounded-lg border border-line bg-surface2 p-3"><div class="font-medium">Registration form</div><div class="text-inkSoft mt-1">name · email · team · track</div></div>
+          <div class="rounded-lg border border-line bg-surface2 p-3"><div class="font-medium">Sections</div><div class="text-inkSoft mt-1">hero · schedule · prizes · FAQ</div></div>
+          <div class="rounded-lg border border-line bg-surface2 p-3"><div class="font-medium">Deploy</div><div class="text-inkSoft mt-1">Claude Code → Vercel</div></div></div></div>`;
+  }
+  if(key==='outreach'){
+    const mails=MockIntegrations.outreach.draftSponsorEmails();
+    if(!full) return `<div class="p-3 space-y-2 h-full flex flex-col">
+        ${mails.map(e=>`<div class="rounded-lg border border-line bg-surface2 p-2"><div class="text-[12px] truncate">${e.subj}</div><div class="text-[10px] text-inkSoft truncate">${e.to}</div></div>`).join('')}
+        <div class="text-[10px] mt-auto rounded p-1.5" style="color:#8f3f28;background:rgba(178,85,59,.08);border:1px solid rgba(178,85,59,.25)">Drafts only — approve in chat to send.</div></div>`;
+    return `<div class="space-y-3">${mails.map(e=>`
+        <div class="rounded-xl border border-line bg-surface2 p-4">
+          <div class="flex items-center gap-2"><span class="text-sm font-medium">${e.subj}</span>
+            <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded" style="color:#8f3f28;background:rgba(178,85,59,.1);border:1px solid rgba(178,85,59,.3)">DRAFT · awaiting your OK</span></div>
+          <div class="text-[11px] text-inkSoft mt-0.5 mono">to: ${e.to}</div>
+          <div class="text-[12px] mt-2 whitespace-pre-line leading-relaxed">${e.body}</div></div>`).join('')}
+        <div class="text-[12px] rounded-lg p-2.5" style="color:#8f3f28;background:rgba(178,85,59,.08);border:1px solid rgba(178,85,59,.22)">Nothing sends until you approve it in the chat — that's a Tier 3 human handoff.</div></div>`;
+  }
+  return '';
 }
 
-function renderRedis(){
-  $('redis-json').textContent = JSON.stringify(profile, null, 1);
-  const filled = Object.keys(profile.event||{}).length>0;
-  $('redis-stat').textContent = profile.status;
-  $('redis-stat').className = `text-[10px] px-2 py-0.5 rounded-full border ${filled?'bg-cyan/10 text-cyan border-cyan/40':'bg-panel2 text-slate-500 border-line'}`;
+function buildCard(key){
+  const m=META[key]; const el=document.createElement('div');
+  el.className='tile tile-in rounded-2xl border border-line bg-surface soft';
+  el.innerHTML=`<div class="tile-head"><span class="text-sm font-semibold">${m.title}</span>
+    <button class="tbtn ml-auto" title="Maximize" data-more="${key}">⤢</button>
+    <button class="tbtn" title="Close" data-close="${key}">×</button></div><div class="tile-body">${body(key,false)}</div>`;
+  el.querySelector('[data-more]').onclick=()=>openModal(key);
+  el.querySelector('[data-close]').onclick=()=>{ open.delete(key); relayout(); };
+  return el;
 }
-function setDeep(obj,path,val){ const k=path.split('.'); let o=obj; for(let i=0;i<k.length-1;i++){o[k[i]]=o[k[i]]||{};o=o[k[i]];} o[k[k.length-1]]=val; }
+function ensureChip(key){ if($('chip-'+key)) return; const m=META[key]; const b=document.createElement('button');
+  b.id='chip-'+key; b.className='chip tile-in'; b.innerHTML=`<span>${m.icon}</span> ${m.label}`;
+  b.onclick=()=>{ open.has(key)?open.delete(key):open.add(key); relayout(); }; $('chips').appendChild(b); $('chipsHint').style.display='none'; }
+function relayout(){
+  const list=ORDER.filter(k=>open.has(k)); const grid=$('tileGrid'); grid.innerHTML='';
+  list.forEach(k=>grid.appendChild(buildCard(k)));
+  grid.style.gridTemplateColumns=`repeat(${list.length<=1?1:2}, minmax(0,1fr))`;
+  grid.style.display=list.length?'grid':'none';
+  $('chatCol').style.flexBasis = list.length===0?'100%':list.length<=2?'50%':list.length===3?'44%':'38%';
+  Object.keys(META).forEach(k=>{ const c=$('chip-'+k); if(c) c.classList.toggle('chip-on', open.has(k)); });
+}
+function revealPanel(key){ ensureChip(key); open.add(key); relayout(); }
 
+function openModal(key){ $('modalTitle').textContent=META[key].title; $('modalBody').innerHTML=body(key,true); $('modal').style.opacity='1'; $('modal').style.pointerEvents='auto'; }
+function closeModal(){ $('modal').style.opacity='0'; $('modal').style.pointerEvents='none'; }
+$('modalClose').onclick=closeModal; $('modalScrim').onclick=closeModal;
+
+function openDrawer(){ $('drawer').style.transform='translateX(0)'; $('scrim').style.opacity='1'; $('scrim').style.pointerEvents='auto'; }
+function closeDrawer(){ $('drawer').style.transform='translateX(100%)'; $('scrim').style.opacity='0'; $('scrim').style.pointerEvents='none'; }
+$('btsBtn').onclick=openDrawer; $('btsClose').onclick=closeDrawer; $('scrim').onclick=closeDrawer;
+
+function buildRail(){ $('phaseRail').innerHTML=PHASES.map((p,i)=>`
+  <div class="flex items-center gap-1"><span data-rail="${i}" class="px-2 py-1 rounded-md border border-line text-inkSoft">${i}· ${p}</span>${i<PHASES.length-1?'<span class="text-line">→</span>':''}</div>`).join(''); }
+function setPhase(p){
+  document.querySelectorAll('[data-rail]').forEach(el=>{ const i=+el.dataset.rail;
+    el.className='px-2 py-1 rounded-md border '+(i<p?'border-line text-inkSoft bg-surface2':i===p?'border-coral/60 text-coralDeep bg-coral/10 glow':'border-line text-inkSoft/60'); });
+  $('statusPill').textContent=STATUS[p];
+  $('statusPill').className='text-[11px] px-2.5 py-1 rounded-full border shrink-0 '+(p===5?'border-olive/50 text-olive bg-olive/10':p===4?'border-brick/50 text-brick bg-brick/10':'border-coral/40 text-coralDeep bg-coral/10');
+}
+function chatMsg(from,text,actions){
+  const t=$('chatThread'); const w=document.createElement('div'); w.className='fade-in flex '+(from==='user'?'justify-end':'justify-start');
+  const st = from==='user' ? 'background:#F6E6DE;color:#1B1A17;border-bottom-right-radius:.35rem' : 'background:#FBF9F4;color:#1B1A17;border:1px solid #E5DFD2;border-bottom-left-radius:.35rem';
+  w.innerHTML=`<div class="max-w-[80%] px-3.5 py-2.5 rounded-2xl text-[13.5px] whitespace-pre-line leading-relaxed" style="${st}">${text}</div>`;
+  t.appendChild(w); t.scrollTop=t.scrollHeight;
+  const bar=$('chatActions');
+  if(actions){ bar.innerHTML='';
+    actions.forEach(a=>{ const b=document.createElement('button');
+      const st2=a.kind==='primary'?'background:#B05E40;color:#FBF9F4':a.kind==='danger'?'background:#B2553B;color:#FBF9F4':'background:transparent;color:#6E6A63;border:1px solid #D9D2C4';
+      b.className='px-3.5 py-2 rounded-full text-[13px] font-medium'; b.setAttribute('style',st2); b.textContent=a.label;
+      b.onclick=()=>{ chatMsg('user',a.reply); bar.innerHTML=idleInput(); waiting=false; advance(); }; bar.appendChild(b); });
+  } else bar.innerHTML=idleInput();
+}
+function idleInput(){ return '<input disabled placeholder="Message Sai…" class="w-full bg-surface2 border border-line rounded-full px-4 py-2 text-[13px] text-inkSoft placeholder:text-inkSoft/60" />'; }
+function renderRedis(){ $('redis-json').textContent=JSON.stringify(profile,null,1); const f=Object.keys(profile.event||{}).length>0; setPill($('redis-stat'), profile.status, f?'coral':'idle'); }
+function setDeep(o,p,v){ const k=p.split('.'); let c=o; for(let i=0;i<k.length-1;i++){c[k[i]]=c[k[i]]||{};c=c[k[i]];} c[k[k.length-1]]=v; }
 function saiUpdate(s){
-  if(s.stat){ $('sai-stat').textContent=s.stat; $('sai-stat').className=`text-[10px] px-2 py-0.5 rounded-full border ${s.stat==='active'?'bg-lime/10 text-lime border-lime/40':s.stat==='done'?'bg-cyan/10 text-cyan border-cyan/40':'bg-panel2 text-slate-500 border-line'}`; }
-  if(s.intent) $('sai-intent').textContent=s.intent;
-  if(s.node) $('sai-node').textContent=s.node;
+  if(s.stat) setPill($('sai-stat'), s.stat, s.stat==='active'?'olive':s.stat==='done'?'coral':'idle');
+  if(s.intent) $('sai-intent').textContent=s.intent; if(s.node) $('sai-node').textContent=s.node;
   if(s.log){ const l=$('sai-log'); const d=document.createElement('div'); d.className='fade-in'; d.textContent='› '+s.log; l.appendChild(d); l.scrollTop=l.scrollHeight; }
 }
-
-function tierHighlight(t){
-  [1,2,3].forEach(n=>$('tier-'+n).classList.remove('panel-active'));
-  if(t){ $('tier-'+t).classList.add('panel-active'); activate('panel-tiers'); }
-}
-
-function arizeAdd(a){
-  arizeMs+=a.ms; arizeCost+=a.cost;
-  const l=$('arize-list'); const d=document.createElement('div');
-  d.className='fade-in flex justify-between '+(a.warn?'text-amber':'text-slate-400');
-  d.innerHTML=`<span>${a.warn?'⚠':'•'} ${a.node}</span><span class="text-slate-500">${a.ms}ms · $${a.cost.toFixed(4)}</span>`;
-  l.appendChild(d); l.scrollTop=l.scrollHeight;
-  $('arize-stat').textContent = l.children.length+' spans';
-  $('arize-total').textContent = `${arizeMs.toLocaleString()} ms · $${arizeCost.toFixed(3)}`;
-}
-
-function creative(state){
-  activate('panel-creative');
-  const stat=$('creative-stat');
-  if(state==='start'){ stat.textContent='generating…'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-amber/10 text-amber border border-amber/40 pulse-dot'; }
-  if(state==='done'){
-    stat.textContent='ready'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-lime/10 text-lime border border-lime/40';
-    $('cre-logo').innerHTML='<div class="font-bold text-cyan text-lg">B<span class="text-violet">/</span>AI</div>'; $('cre-logo').classList.add('bg-[#0a1f44]');
-    $('cre-c1').style.background=BRAND.colors[0]; $('cre-c2').style.background=BRAND.colors[1]; $('cre-c3').style.background=BRAND.colors[2];
-    $('cre-bg').className='mt-2 h-16 rounded-lg border border-line grid place-items-center text-[10px] text-cyan/70 scanline'; $('cre-bg').style.background='linear-gradient(120deg,#0a1f44,#08111f)'; $('cre-bg').textContent='◢◤ background graphic';
-    $('cre-pika').textContent='▶ promo.mp4 · 6s'; $('cre-pika').className='mt-2 h-9 rounded-lg border border-line bg-[#0a1f44] grid place-items-center text-[10px] text-cyan/70';
-  }
-}
-
-function deploy(state){
-  activate('panel-deploy');
-  const stat=$('deploy-stat'), log=$('deploy-log'), url=$('deploy-url');
-  if(state==='build'){
-    stat.textContent='building…'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-amber/10 text-amber border border-amber/40 pulse-dot';
-    ['$ claude-code build --profile event.json','✓ parsed event profile','✓ injected brand tokens','✓ index.html + tailwind','↑ pushing to Vercel…'].forEach((t,i)=>{
-      setTimeout(()=>{ const d=document.createElement('div'); d.className='fade-in'; d.textContent=t; log.appendChild(d); },i*180);
-    });
-  }
-  if(state==='done'){
-    stat.textContent='live'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-lime/10 text-lime border border-lime/40';
-    url.textContent='berkeley-ai-hack.vercel.app';
-    $('site-preview').innerHTML = `
-      <div class="absolute inset-0 text-white" style="background:linear-gradient(135deg,#0a1f44,#08111f)">
-        <div class="h-full flex flex-col items-center justify-center text-center px-3 scanline">
-          <div class="text-[7px] tracking-[0.3em] text-cyan/70">UC BERKELEY · 2026</div>
-          <div class="text-[15px] font-bold mt-0.5">Berkeley <span style="color:#22d3ee">AI</span> Hackathon</div>
-          <div class="text-[8px] text-slate-300 mt-0.5">200 builders · 6 weeks out · in person</div>
-          <button class="mt-1.5 text-[8px] font-semibold px-2.5 py-1 rounded-full" style="background:#22d3ee;color:#0a1f44">Register →</button>
-        </div>
-      </div>`;
-  }
-}
-
-function browserbase(state){
-  activate('panel-browserbase');
-  const stat=$('bb-stat'), list=$('bb-list');
-  if(state==='slack'){
-    stat.textContent='running…'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-amber/10 text-amber border border-amber/40 pulse-dot';
-    const r=MockIntegrations.browserbase.provisionSlack();
-    const head=document.createElement('div'); head.className='text-lime'; head.textContent='✓ Slack workspace created'; list.appendChild(head);
-    r.channels.forEach((c,i)=>setTimeout(()=>{ const d=document.createElement('div'); d.className='fade-in text-slate-400 pl-3'; d.textContent='+ '+c; list.appendChild(d); },i*150));
-  }
-  if(state==='devpost-fail'){
-    stat.textContent='1 fallback'; stat.className='text-[10px] px-2 py-0.5 rounded-full bg-amber/10 text-amber border border-amber/40';
-    const r=MockIntegrations.browserbase.createDevpost();
-    const d=document.createElement('div'); d.className='fade-in text-amber mt-1'; d.textContent='⚠ Devpost: '+r.fallback; list.appendChild(d);
-    const d2=document.createElement('div'); d2.className='fade-in text-slate-500 pl-3 text-[10px]'; d2.textContent='→ run continues (no crash)'; list.appendChild(d2);
-  }
-}
-
-function outreach(){
-  activate('panel-outreach');
-  $('out-stat').textContent='3 drafts · not sent';
-  $('out-stat').className='text-[10px] px-2 py-0.5 rounded-full bg-rose/10 text-rose border border-rose/40';
-  const list=$('out-list');
-  MockIntegrations.outreach.draftSponsorEmails().forEach((e,i)=>setTimeout(()=>{
-    const d=document.createElement('div'); d.className='fade-in rounded-lg border border-line bg-panel2 p-2';
-    d.innerHTML=`<div class="text-[11px] text-slate-300 truncate">${e.subj}</div>
-      <div class="text-[10px] text-slate-500 truncate">${e.to}</div>
-      <div class="mt-1 text-[9px] inline-block px-1.5 py-0.5 rounded bg-rose/10 text-rose border border-rose/30">DRAFT · awaiting human</div>`;
-    list.appendChild(d);
-  },i*180));
-}
+function tierHighlight(t){ [1,2,3].forEach(n=>$('tier-'+n).classList.remove('glow')); if(t)$('tier-'+t).classList.add('glow'); }
+function arizeAdd(a){ arizeMs+=a.ms; arizeCost+=a.cost; const l=$('arize-list'); const d=document.createElement('div');
+  d.className='fade-in flex justify-between'; d.setAttribute('style', a.warn?'color:#8a6516':'color:#6E6A63');
+  d.innerHTML=`<span>${a.warn?'⚠':'•'} ${a.node}</span><span style="color:#9A857B">${a.ms}ms · $${a.cost.toFixed(4)}</span>`;
+  l.appendChild(d); l.scrollTop=l.scrollHeight; $('arize-stat').textContent=l.children.length+' spans'; $('arize-total').textContent=`${arizeMs.toLocaleString()} ms · $${arizeCost.toFixed(3)}`; }
+function browserbase(){ setPill($('bb-stat'),'done','olive');
+  const r=MockIntegrations.browserbase.provisionSlack(); const list=$('bb-list');
+  const h=document.createElement('div'); h.style.color='#586237'; h.textContent='✓ Slack workspace created'; list.appendChild(h);
+  r.channels.forEach(c=>{ const d=document.createElement('div'); d.style.color='#6E6A63'; d.className='pl-3'; d.textContent='+ '+c; list.appendChild(d); });
+  const f=MockIntegrations.browserbase.createDevpost(); const d=document.createElement('div'); d.style.color='#8a6516'; d.className='mt-1'; d.textContent='⚠ Devpost: '+f.fallback; list.appendChild(d);
+  const d2=document.createElement('div'); d2.style.color='#9A857B'; d2.className='pl-3 text-[10px]'; d2.textContent='→ run continues (no crash)'; list.appendChild(d2); }
 
 function applyStep(s){
   if(s.phase!==undefined) setPhase(s.phase);
   if(s.tier) tierHighlight(s.tier);
-  if(s.sai){ if(!s.creative&&!s.deploy&&!s.bb&&!s.outreach) activate('panel-sai'); saiUpdate(s.sai); }
-  if(s.redisInit){ activate('panel-redis'); renderRedis(); }
+  if(s.sai) saiUpdate(s.sai);
+  if(s.redisInit) renderRedis();
   if(s.redisStatus){ profile.status=s.redisStatus; renderRedis(); }
-  ['redis','redis2','redis3','redisArtifact'].forEach(k=>{ if(s[k]){ activate('panel-redis'); setDeep(profile,s[k].path,s[k].value); renderRedis(); } });
-  if(s.creative) creative(s.creative);
-  if(s.deploy) deploy(s.deploy);
-  if(s.bb) browserbase(s.bb);
-  if(s.outreach) outreach();
+  ['redis','redis2','redis3','redisArtifact'].forEach(k=>{ if(s[k]){ setDeep(profile,s[k].path,s[k].value); renderRedis(); } });
+  if(s.bb==='devpost-fail') browserbase();
   if(s.arize) arizeAdd(s.arize);
-  if(s.msg){ if(!s.msg.actions) activate('panel-console'); consoleMsg(s.msg.from, s.msg.text, s.msg.actions); if(s.msg.actions) waiting=true; }
+  if(s.reveal) revealPanel(s.reveal);
+  if(s.msg){ chatMsg(s.msg.from,s.msg.text,s.msg.actions); if(s.msg.actions) waiting=true; }
 }
-
 function advance(){
-  if(waiting) return;            // blocked at a human-in-the-loop gate
-  if(idx >= STEPS.length-1){ stopAuto(); $('nextBtn').textContent='✓ Done'; $('nextBtn').disabled=true; $('nextBtn').classList.add('opacity-40'); return; }
-  idx++;
-  applyStep(STEPS[idx]);
-  $('nextBtn').disabled = waiting;
-  $('nextBtn').classList.toggle('opacity-40', waiting);
-  $('nextBtn').textContent = waiting ? '✋ act in the console' : 'Next ▸';
+  if(waiting) return;
+  if(idx>=STEPS.length-1){ stopAuto(); $('nextBtn').textContent='✓ Done'; $('nextBtn').disabled=true; $('nextBtn').classList.add('opacity-40'); return; }
+  idx++; applyStep(STEPS[idx]);
+  $('nextBtn').disabled=waiting; $('nextBtn').classList.toggle('opacity-40',waiting); $('nextBtn').textContent=waiting?'✋ reply in chat':'Next ▸';
 }
-
 function startAuto(){ auto=true; $('autoBtn').textContent='⏸ Pause'; tick(); }
 function stopAuto(){ auto=false; $('autoBtn').textContent='▶ Auto-play'; clearTimeout(autoTimer); }
-function tick(){ if(!auto) return; if(!waiting && idx<STEPS.length-1){ advance(); } autoTimer=setTimeout(tick, waiting?700:1300); }
-
+function tick(){ if(!auto)return; if(!waiting&&idx<STEPS.length-1) advance(); autoTimer=setTimeout(tick,waiting?700:1300); }
 function reset(){ location.reload(); }
+$('nextBtn').onclick=advance; $('autoBtn').onclick=()=>auto?stopAuto():startAuto(); $('resetBtn').onclick=reset;
+document.addEventListener('keydown',e=>{ if(e.code==='Escape'){ closeModal(); closeDrawer(); }
+  if(e.code==='Space'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); advance(); } });
 
-$('nextBtn').onclick = advance;
-$('autoBtn').onclick = ()=> auto ? stopAuto() : startAuto();
-$('resetBtn').onclick = reset;
-document.addEventListener('keydown', e=>{
-  if(e.code==='Space' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); advance(); }
-});
-
-buildRail(); setPhase(0); renderRedis(); $('consoleActions').innerHTML = idleInput();
+buildRail(); setPhase(0); renderRedis(); relayout(); $('chatActions').innerHTML=idleInput();
 </script>
 </body>
 </html>
