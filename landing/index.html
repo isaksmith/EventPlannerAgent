@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Marquee — text one number, get a whole event</title>
+<title>Marquee, your event planner</title>
 <link rel="icon" type="image/jpeg" href="frames/frame_000.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,7 +87,7 @@
 </style>
 </head>
 <body>
-<div id="loader"><div style="text-align:center"><div class="l">igniting</div><div class="bar"><i id="lbar"></i></div></div></div>
+<div id="loader"><div style="text-align:center"><div class="l">loading</div><div class="bar"><i id="lbar"></i></div></div></div>
 
 <div class="topbar" id="topbar">
   <span class="wm">Marquee</span>
@@ -108,15 +108,15 @@
 <!-- ===== SURFACE: the light world + CTA ===== -->
 <section id="surface">
   <div class="hero2">
-    <div class="eb">— the show is yours —</div>
-    <h1 class="display">You answered a few questions. Marquee did the rest.</h1>
-    <p>One text. A few questions. Then the whole event — branding, website, Slack and sponsor emails — built and ready in hours.</p>
+    <div class="eb">for hackathons and their organizers</div>
+    <h1 class="display">Spend your time on the event itself.</h1>
+    <p>You do not need a team, an agency, or any code.</p>
     <a class="cta" id="cta" href="#">Try the Demo →</a>
     <div class="builtwith">Built with Simular Sai · Midjourney · Claude Code · Browserbase · Redis · Arize</div>
   </div>
   <div class="foot">
     <span class="wm display" style="font-weight:600;font-size:16px">Marquee</span>
-    <span class="mono" style="margin-left:auto">plan a whole event by chat</span>
+    <span class="mono" style="margin-left:auto">the online setup for your event</span>
   </div>
 </section>
 
@@ -137,9 +137,9 @@ const smooth = t => t*t*(3-2*t)
 /* ---- story beats (p = scroll progress, 0 = far void → 1 = the core/light) ---- */
 const BEATS = [
   { p:0.10, big:'Marquee, your personal event planner.', sub:'' },
-  { p:0.34, big:'Tell it about your event.', sub:'Answer a few quick questions in a chat.' },
-  { p:0.56, big:'It builds everything for you.', sub:'Branding, a website, your Slack, and sponsor emails.' },
-  { p:0.78, big:'It checks before it spends or sends.', sub:'You stay in control — Marquee just needs your yes.' },
+  { p:0.33, big:'You already know the right people.', sub:'Getting everything set up online is what takes the most time.' },
+  { p:0.55, big:'Marquee builds it all from one chat.', sub:'All you do is answer a few questions.' },
+  { p:0.77, big:'A brand, a website, a sign up page, and sponsor outreach.', sub:'Ready to share in a few hours.' },
 ]
 const beatsEl = document.getElementById('beats')
 const beatNodes = BEATS.map(b=>{
@@ -198,13 +198,13 @@ function update(){
   paint(Math.round(p*(N-1)))
   // beats
   for(let i=0;i<BEATS.length;i++){
-    const o = plateau(p, BEATS[i].p, 0.115)
+    const o = plateau(p, BEATS[i].p, 0.10)
     const n = beatNodes[i]
     n.style.opacity = o
     n.style.transform = `translate(-50%,-50%) translateY(${(1-o)*10}px)`
   }
   // turn-on into the light near the end
-  cream.style.opacity = smooth(clamp((p-0.9)/0.1,0,1))
+  cream.style.opacity = smooth(clamp((p-0.91)/0.09,0,1))
   topbar.classList.toggle('dark', p>0.94)
   cue.style.opacity = clamp(1 - p/0.06, 0, 1)
 }
