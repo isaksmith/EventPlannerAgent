@@ -14,9 +14,7 @@ export function ChatPanel({ messages, pendingActions, onAnswer }: {
 
   return (
     <div className="rounded-2xl border border-line bg-surface overflow-hidden soft h-full flex flex-col">
-      {/* scallop canopy (Midjourney) */}
-      <div className="h-12 flex-none bg-cover" style={{ backgroundImage: "linear-gradient(to bottom, rgba(251,249,244,0) 35%, #FBF9F4 100%), url('/assets/marquee-scallop.jpg')", backgroundPosition: 'center 28%' }} />
-      <div className="px-4 py-3 border-b border-line flex items-center gap-3 -mt-2">
+      <div className="px-4 py-3 border-b border-line flex items-center gap-3">
         <div className="h-9 w-9 rounded-full grid place-items-center text-surface font-semibold" style={{ background: '#CC785C' }}>S</div>
         <div>
           <div className="text-[14px] font-medium leading-none">Sai</div>
