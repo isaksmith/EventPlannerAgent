@@ -31,7 +31,7 @@ export function BehindTheScenes({ open, onClose, s }: { open: boolean; onClose: 
         <div className="sticky top-0 bg-canvas/95 backdrop-blur px-4 py-3 border-b border-line flex items-center gap-2">
           <div>
             <div className="text-sm font-semibold">Behind the scenes</div>
-            <div className="text-[11px] text-inkSoft">the systems Sai is driving — for transparency</div>
+            <div className="text-[11px] text-inkSoft">what Marquee is running — for transparency</div>
           </div>
           <button onClick={onClose} className="ml-auto h-8 w-8 rounded-md border border-line text-inkSoft hover:bg-surface2">×</button>
         </div>
@@ -50,7 +50,7 @@ export function BehindTheScenes({ open, onClose, s }: { open: boolean; onClose: 
 
           <div className="rounded-xl border border-line bg-surface p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">Simular Sai <span className="text-inkSoft font-normal">· dispatcher</span></h3>
+              <h3 className="text-sm font-semibold">Marquee <span className="text-inkSoft font-normal">· dispatcher</span></h3>
               <Pill text={s.sai.stat} kind={s.sai.stat === 'active' ? 'olive' : s.sai.stat === 'done' ? 'coral' : 'idle'} />
             </div>
             <div className="space-y-2 text-xs">
@@ -103,7 +103,7 @@ export function BehindTheScenes({ open, onClose, s }: { open: boolean; onClose: 
           </div>
 
           <div className="rounded-xl border border-line bg-surface p-4">
-            <h3 className="text-sm font-semibold mb-3">How Sai decides <span className="text-inkSoft font-normal">· autonomy</span></h3>
+            <h3 className="text-sm font-semibold mb-3">How Marquee decides <span className="text-inkSoft font-normal">· autonomy</span></h3>
             <div className="space-y-2">
               {TIERS.map((tier) => (
                 <div key={tier.n} className={'rounded-lg border border-line p-2.5 ' + (s.activeTier === tier.n ? 'glow' : '')}>

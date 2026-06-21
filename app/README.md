@@ -12,8 +12,14 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
-Drive the demo with **Auto-play** (or **Next** / Spacebar). Approve in the chat
-at the two gates. **Reset** restarts.
+### Live backend (Marquee + Poke workflow)
+
+1. Start the FastAPI backend (`uvicorn` on port 8000) from `backend/` in the milestone worktree.
+2. Open Marquee → click **○ Demo** to toggle **● Live ON**.
+3. Type **PLAN** in chat — same flow as Poke SMS (`POST /webhooks/poke`).
+4. Optional: set `VITE_API_BASE` in `app/.env` (default `http://127.0.0.1:8000`).
+
+Drive the **demo** with **Auto-play** (or **Next** / Spacebar). In **live** mode, chat drives the real engine.
 
 ## Stack
 

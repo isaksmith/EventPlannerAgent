@@ -32,7 +32,7 @@ export const demoScript: Step[] = [
   // PHASE 0 — Initiation
   { phase: 0, msg: { from: 'user', text: 'I want to plan an event' } },
   { phase: 0, sai: { stat: 'active', intent: 'START_PLAN', node: 'session.create', log: 'new session → session:demo-001' }, span: { node: 'intent.classify', ms: 180, cost: 0.0009 } },
-  { phase: 0, msg: { from: 'sai', text: "Love it — I'll handle the whole thing. I'll ask a few quick questions, then build it all for you. Ready?" } },
+  { phase: 0, msg: { from: 'sai', text: "Hi — I'm Marquee, your event planner. I'll ask a few quick questions, then build it all for you. Ready?" } },
 
   // PHASE 1 — Interview
   { phase: 1, sai: { node: 'interview.identity', log: 'branch → identity' }, msg: { from: 'sai', text: 'First — what are we building? (name + type)' } },

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "midjourney": {
+      "url": "https://mcp.midjourney.com/mcp"
+    },
+    "arize-tracing-assistant": {
+      "command": "uvx",
+      "args": ["arize-tracing-assistant@latest"]
+    },
+    "arize-ax-docs": {
+      "url": "https://arize.com/docs/mcp"
+    }
+  }
+}

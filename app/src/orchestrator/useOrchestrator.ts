@@ -17,7 +17,7 @@ import type {
 
 interface Dispatcher { stat: 'idle' | 'active' | 'done'; intent: string; node: string; log: string[] }
 interface BbLine { text: string; tone: 'ok' | 'warn' | 'muted' }
-interface Deliverables { branding?: BrandKit; website?: SiteResult; outreach?: EmailDraft[] }
+export interface Deliverables { branding?: BrandKit; website?: SiteResult; outreach?: EmailDraft[] }
 
 export interface OrchestratorState {
   idx: number
@@ -61,6 +61,10 @@ function initialState(): OrchestratorState {
     sai: { stat: 'idle', intent: '—', node: 'init', log: [] },
     bbLog: [], bbStatus: 'waiting', activeTier: null,
   }
+}
+
+export function initialOrchestratorState(): OrchestratorState {
+  return initialState()
 }
 
 export function useOrchestrator(): Orchestrator {
