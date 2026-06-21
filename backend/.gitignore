@@ -1,0 +1,8 @@
+var/assets/
+var/builds/
+var/midjourney_mcp/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env

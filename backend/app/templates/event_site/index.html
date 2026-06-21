@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{META_DESCRIPTION}}" />
+  <title>{{EVENT_TITLE}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* UI/UX Pro Max — Marquee Event design system (Event/Conference Landing, Vibrant & Block-based) */
+    :root {
+      --color-primary: {{COLOR_PRIMARY}};
+      --color-secondary: {{COLOR_SECONDARY}};
+      --color-accent: {{COLOR_ACCENT}};
+      --color-background: {{COLOR_BACKGROUND}};
+      --color-foreground: {{COLOR_FOREGROUND}};
+      --color-muted: {{COLOR_MUTED}};
+      --color-border: {{COLOR_BORDER}};
+      --color-on-primary: #ffffff;
+      --color-surface: #ffffff;
+      --color-on-surface: var(--color-foreground);
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --radius: 1rem;
+      --radius-lg: 1.25rem;
+      --shadow: 0 4px 24px color-mix(in srgb, var(--color-primary) 12%, transparent);
+      --transition: 200ms ease-out;
+      --max-w: 72rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--color-on-surface);
+      background: var(--color-background);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .display-heading {
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      line-height: 0.95;
+      text-transform: uppercase;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: var(--space-4);
+      z-index: 1000;
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      border-radius: var(--radius);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .skip-link:focus-visible {
+      top: var(--space-4);
+      outline: 3px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-6);
+      background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: inherit;
+      min-height: 44px;
+    }
+    .nav-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--space-3);
+      object-fit: cover;
+      border: 2px solid var(--color-border);
+      background: var(--color-background);
+    }
+    .nav-title {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.375rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+    .nav-links a:not(.btn) {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--color-muted);
+      text-decoration: none;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      transition: color var(--transition);
+    }
+    .nav-links a:not(.btn):hover { color: var(--color-primary); }
+    .nav-links a:not(.btn):focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      min-height: 44px;
+      padding: 0.625rem 1.5rem;
+      border: none;
+      border-radius: 9999px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      box-shadow: var(--shadow);
+    }
+    .btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:focus-visible {
+      outline: 3px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-border);
+    }
+    .btn-ghost:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: var(--color-foreground);
+      color: var(--color-on-primary);
+    }
+    .hero-media {
+      position: absolute;
+      inset: 0;
+    }
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg,
+          color-mix(in srgb, var(--color-primary) 55%, transparent) 0%,
+          color-mix(in srgb, var(--color-foreground) 85%, transparent) 55%,
+          var(--color-foreground) 100%);
+    }
+    .hero-inner {
+      position: relative;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: var(--space-16) var(--space-6) var(--space-12);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+    @media (min-width: 768px) {
+      .hero-inner { grid-template-columns: 1.2fr 0.8fr; align-items: end; }
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 5.5rem);
+      margin: 0 0 var(--space-4);
+    }
+    .hero-lead {
+      font-size: 1.125rem;
+      font-weight: 300;
+      color: color-mix(in srgb, white 78%, transparent);
+      max-width: 32rem;
+      margin: 0 0 var(--space-6);
+    }
+    .hero-card {
+      background: color-mix(in srgb, white 10%, transparent);
+      border: 1px solid color-mix(in srgb, white 18%, transparent);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      backdrop-filter: blur(8px);
+    }
+    .hero-card-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-secondary);
+      margin-bottom: var(--space-4);
+    }
+    .hero-meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid color-mix(in srgb, white 12%, transparent);
+    }
+    .hero-meta-row:last-child { border-bottom: none; }
+    .hero-meta-row svg { flex-shrink: 0; margin-top: 2px; color: var(--color-secondary); }
+    .hero-meta-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: color-mix(in srgb, white 55%, transparent);
+    }
+    .hero-meta-value { font-size: 1.0625rem; font-weight: 600; margin: 0; }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+
+    /* ── Stats blocks ── */
+    .stats {
+      max-width: var(--max-w);
+      margin: calc(var(--space-8) * -1) auto 0;
+      padding: 0 var(--space-6);
+      position: relative;
+      z-index: 2;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+    }
+    .stat-block {
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: transform var(--transition), border-color var(--transition);
+    }
+    .stat-block:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary);
+    }
+    .stat-value {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 2.75rem;
+      line-height: 1;
+      color: var(--color-primary);
+    }
+    .stat-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-top: var(--space-2);
+    }
+
+    /* ── Sections ── */
+    .section {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: var(--space-16) var(--space-6);
+    }
+    .section-head { margin-bottom: var(--space-8); }
+    .eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin: 0 0 var(--space-2);
+    }
+    .section-head .display-heading {
+      font-size: clamp(2.25rem, 5vw, 3.5rem);
+      color: var(--color-foreground);
+      margin: 0;
+    }
+    .section-body {
+      font-size: 1.0625rem;
+      color: var(--color-muted);
+      max-width: 40rem;
+      line-height: 1.75;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+      align-items: center;
+    }
+    @media (min-width: 768px) {
+      .about-grid { grid-template-columns: 1fr 1fr; gap: var(--space-12); }
+    }
+    .about-visual {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 3px solid var(--color-border);
+      aspect-ratio: 4/5;
+      background: var(--color-border);
+    }
+    .about-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .info-block {
+      display: flex;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius);
+      margin-top: var(--space-6);
+    }
+    .info-block svg { color: var(--color-primary); flex-shrink: 0; }
+    .info-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0 0 var(--space-1);
+    }
+    .info-value { margin: 0; font-weight: 500; color: var(--color-foreground); }
+
+    /* ── Bento gallery ── */
+    .gallery-section { background: color-mix(in srgb, var(--color-primary) 4%, var(--color-background)); }
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-4);
+    }
+    .bento-item {
+      position: relative;
+      margin: 0;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 2px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .bento-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 300ms ease-out;
+    }
+    .bento-item:hover img { transform: scale(1.03); }
+    .bento-item figcaption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: var(--space-4);
+      background: linear-gradient(transparent, color-mix(in srgb, var(--color-foreground) 80%, transparent));
+      color: white;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .block-hero { grid-column: span 12; aspect-ratio: 21/9; }
+    .block-tall { grid-column: span 12; aspect-ratio: 16/10; }
+    .block-square { grid-column: span 12; aspect-ratio: 1; }
+    @media (min-width: 768px) {
+      .block-hero { grid-column: span 8; }
+      .block-tall { grid-column: span 4; aspect-ratio: 3/4; }
+      .block-square { grid-column: span 4; }
+    }
+
+    /* ── Location / map ── */
+    .map-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+      align-items: stretch;
+    }
+    @media (min-width: 768px) {
+      .map-layout { grid-template-columns: 0.85fr 1.15fr; gap: var(--space-12); }
+    }
+    .map-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      justify-content: center;
+    }
+    .map-info .btn { align-self: flex-start; }
+    .map-frame {
+      position: relative;
+      min-height: 340px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 2px solid var(--color-border);
+      box-shadow: var(--shadow);
+      background: var(--color-muted);
+    }
+    .map-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* ── Sponsors ── */
+    .sponsor-grid {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+      gap: var(--space-4);
+    }
+    .sponsor-card {
+      padding: var(--space-6);
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius);
+      text-align: center;
+      font-weight: 500;
+      color: var(--color-muted);
+    }
+
+    /* ── Register ── */
+    .register-section {
+      background: var(--color-foreground);
+      color: var(--color-on-primary);
+    }
+    .register-section .eyebrow { color: var(--color-secondary); }
+    .register-section .display-heading { color: white; }
+    .register-section .section-body { color: color-mix(in srgb, white 72%, transparent); }
+    .register-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+      align-items: start;
+    }
+    @media (min-width: 768px) {
+      .register-grid { grid-template-columns: 1fr 1fr; gap: var(--space-12); }
+    }
+    .register-card {
+      background: var(--color-surface);
+      color: var(--color-on-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      box-shadow: var(--shadow);
+    }
+    .field-group { margin-bottom: var(--space-4); }
+    .field-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-foreground);
+      margin-bottom: var(--space-2);
+    }
+    .required { color: var(--color-primary); }
+    .field {
+      width: 100%;
+      min-height: 44px;
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--color-foreground);
+      background: var(--color-background);
+      border: 2px solid var(--color-border);
+      border-radius: var(--space-3);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .field:focus-visible {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    }
+    #reg-status { font-size: 0.875rem; margin-top: var(--space-4); }
+    #reg-status.error { color: #dc2626; }
+    #reg-status.success { color: #15803d; }
+
+    .platform-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+    .platform-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-height: 44px;
+      padding: 0 var(--space-4);
+      border-radius: 9999px;
+      border: 1px solid color-mix(in srgb, white 25%, transparent);
+      color: white;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .platform-chip:hover { background: color-mix(in srgb, white 12%, transparent); }
+    .platform-chip:focus-visible {
+      outline: 2px solid var(--color-secondary);
+      outline-offset: 2px;
+    }
+
+    footer {
+      text-align: center;
+      padding: var(--space-8) var(--space-6);
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      border-top: 1px solid var(--color-border);
+      background: var(--color-background);
+    }
+    footer a {
+      color: var(--color-primary);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+    footer a:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    @media (max-width: 767px) {
+      .nav-links a:not(.btn) { display: none; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header>
+    <nav class="nav" aria-label="Main navigation">
+      <a class="nav-brand" href="#">
+        <img class="nav-logo" id="nav-logo" src="assets/invite_motif.png" alt="" width="44" height="44"
+          onerror="fallbackImg(this, ['assets/invite_motif.webp','assets/logo.png','assets/logo.svg'])" />
+        <span class="nav-title">{{EVENT_NAME}}</span>
+      </a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#register" class="btn btn-primary">{{REGISTER_CTA}}</a>
+      </div>
+    </nav>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-media">
+        <img id="hero-img" src="assets/invite_hero.png" alt=""
+          onerror="fallbackImg(this, ['assets/invite_hero.webp','assets/invite_cover.png','assets/hero.png'])" />
+        <div class="hero-overlay"></div>
+      </div>
+      <div class="hero-inner">
+        <div>
+          <p class="hero-eyebrow">{{EVENT_TYPE}} · {{EVENT_FORMAT}}</p>
+          <h1 id="hero-title" class="hero-title display-heading">{{EVENT_NAME}}</h1>
+          <p class="hero-lead">{{EVENT_VIBE}}</p>
+          <div class="hero-actions">
+            <a href="#register" class="btn btn-primary">{{REGISTER_CTA}}</a>
+            <a href="#about" class="btn btn-ghost" style="color:white;border-color:color-mix(in srgb,white 30%,transparent)">Learn more</a>
+          </div>
+          {{PLATFORM_LINKS}}
+        </div>
+        <aside class="hero-card" aria-label="Event details">
+          <p class="hero-card-label">Event details</p>
+          <div class="hero-meta-row">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div>
+              <p class="hero-meta-label">When</p>
+              <p class="hero-meta-value">{{EVENT_DATES}}</p>
+            </div>
+          </div>
+          <div class="hero-meta-row">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <div>
+              <p class="hero-meta-label">Where</p>
+              <p class="hero-meta-value">{{EVENT_LOCATION}}</p>
+            </div>
+          </div>
+          <div class="hero-meta-row">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <div>
+              <p class="hero-meta-label">Expected guests</p>
+              <p class="hero-meta-value">{{EXPECTED_ATTENDEES}}+</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </header>
+
+  <div class="stats" aria-label="Event highlights">
+    <div class="stats-grid">
+      <div class="stat-block">
+        <p class="stat-value">{{EXPECTED_ATTENDEES}}</p>
+        <p class="stat-label">Guests expected</p>
+      </div>
+      <div class="stat-block">
+        <p class="stat-value" style="font-size:1.75rem;padding-top:0.25rem">{{EVENT_DATES}}</p>
+        <p class="stat-label">Date</p>
+      </div>
+      <div class="stat-block">
+        <p class="stat-value" style="font-size:1.75rem;padding-top:0.25rem">{{EVENT_FORMAT}}</p>
+        <p class="stat-label">Format</p>
+      </div>
+    </div>
+  </div>
+
+  <main id="main">
+    <section class="section" id="about" aria-labelledby="about-heading">
+      <div class="about-grid">
+        <div>
+          <div class="section-head">
+            <p class="eyebrow">The experience</p>
+            <h2 id="about-heading" class="display-heading">You're invited</h2>
+          </div>
+          <p class="section-body">{{EVENT_DESCRIPTION}}</p>
+          {{AUDIENCE_BLOCK}}
+        </div>
+        <div class="about-visual">
+          <img id="about-img" src="assets/invite_cover.png" alt="Event invite artwork" width="600" height="750"
+            onerror="fallbackImg(this, ['assets/invite_cover.webp','assets/invite_hero.png','assets/hero.png'])" />
+        </div>
+      </div>
+    </section>
+
+    {{GALLERY_SECTION}}
+    {{MAP_SECTION}}
+    {{SPONSOR_SECTION}}
+
+    <section class="section register-section" id="register" aria-labelledby="register-heading">
+      <div class="register-grid">
+        <div>
+          <div class="section-head">
+            <p class="eyebrow">Join us</p>
+            <h2 id="register-heading" class="display-heading">{{REGISTER_HEADING}}</h2>
+          </div>
+          <p class="section-body">{{REGISTER_BLURB}}</p>
+        </div>
+        <div class="register-card">
+          <form id="reg-form" action="./register" method="POST" novalidate>
+            {{REGISTRATION_FIELDS}}
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem" id="reg-submit">
+              {{REGISTER_CTA}}
+            </button>
+          </form>
+          <p id="reg-status" class="hidden" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built by <a href="#">Marquee</a>
+    · <a href="./setup-guides.txt">Setup guides</a>
+  </footer>
+
+  <script>
+    function fallbackImg(el, candidates) {
+      const tried = el.dataset.tried ? JSON.parse(el.dataset.tried) : [el.getAttribute('src')?.split('/').pop()];
+      for (const path of candidates) {
+        const name = path.split('/').pop();
+        if (tried.includes(name)) continue;
+        tried.push(name);
+        el.dataset.tried = JSON.stringify(tried);
+        el.src = path;
+        return;
+      }
+      el.style.display = 'none';
+    }
+
+    document.getElementById('reg-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('reg-status');
+      const submit = document.getElementById('reg-submit');
+      status.className = '';
+      status.textContent = 'Submitting…';
+      status.classList.remove('hidden');
+      submit.disabled = true;
+
+      try {
+        const res = await fetch('./register', {
+          method: 'POST',
+          body: new URLSearchParams(new FormData(e.target)),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+        const html = await res.text();
+        if (res.ok) {
+          document.open();
+          document.write(html);
+          document.close();
+        } else {
+          status.className = 'error';
+          status.textContent = 'Registration failed — please check your details and try again.';
+          submit.disabled = false;
+        }
+      } catch {
+        status.className = 'error';
+        status.textContent = 'Network error — please try again.';
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

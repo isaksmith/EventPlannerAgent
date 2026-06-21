@@ -1,0 +1,3 @@
+Promo clip stub for Kristy's Birthday Party
+Prompt: Cinematic 5-second event promo for 'Kristy's Birthday Party', party, Floral, feminine, cute aesthetic, 8211 W Palmetto St, dynamic camera motion, crowd energy, bold typography moments, festival lighting, no logos
+Seed: Marquee event brand | event=Kristy's Birthday Party type=party | dates=July 27th loc=8211 W Palmetto St fmt=in_person | attendees=10 budget=$100 | audience=Kritsy's friends and family | vibe=Floral, f
