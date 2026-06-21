@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marquee — text one number, get a whole event</title>
+<link rel="icon" type="image/jpeg" href="frames/frame_000.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F2EEE5; --surface:#FBF9F4; --ink:#1B1A17; --inkSoft:#6E6A63;
+    --coral:#CC785C; --coralDeep:#B05E40; --line:#E5DFD2;
+  }
+  *{margin:0;box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{background:#07060a;color:#fff;font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  .display{font-family:'Fraunces',serif}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  /* ---- loader ---- */
+  #loader{position:fixed;inset:0;z-index:100;background:#07060a;display:grid;place-items:center;transition:opacity .8s ease}
+  #loader.gone{opacity:0;pointer-events:none}
+  #loader .l{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.35em;color:#c98a6b;text-transform:uppercase}
+  #loader .bar{margin-top:14px;width:160px;height:2px;background:rgba(204,120,92,.2);overflow:hidden;border-radius:2px}
+  #loader .bar i{display:block;height:100%;width:0;background:var(--coral);transition:width .2s}
+
+  /* ---- top bar ---- */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;padding:20px 28px;mix-blend-mode:normal;transition:color .4s}
+  .topbar .wm{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:-.01em}
+  .topbar .tlink{margin-left:auto;font-size:13px;font-weight:500;text-decoration:none;color:inherit;opacity:.82;border-bottom:1px solid currentColor;padding-bottom:1px}
+  .topbar.dark{color:var(--ink)}
+  .topbar:not(.dark){color:#F2EEE5}
+
+  /* ---- hero zoom ---- */
+  #heroTrack{height:1040vh;position:relative}
+  #stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#07060a}
+  #film{position:absolute;inset:0;width:100vw;height:100vh;display:block}
+  /* legibility scrim that sits between film and text */
+  /* calm the busy footage + darken the center band behind text */
+  #scrim{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(rgba(8,6,5,.36),rgba(8,6,5,.36)),
+      radial-gradient(72% 56% at 50% 50%, rgba(5,4,3,.62) 0%, rgba(5,4,3,0) 78%)}
+  /* beats */
+  .beats{position:absolute;inset:0;pointer-events:none}
+  .beat{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,720px);text-align:center;opacity:0;will-change:opacity,transform}
+  .beat::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150%;height:250%;border-radius:50%;z-index:-1;
+    background:radial-gradient(closest-side, rgba(5,4,3,.72), rgba(5,4,3,.36) 55%, rgba(5,4,3,0) 78%)}
+  .beat h2{font-family:'Fraunces',serif;font-weight:500;line-height:1.05;letter-spacing:-.015em;
+    font-size:clamp(2.1rem,5.3vw,4.3rem);color:#F8F3EB;text-shadow:0 2px 30px rgba(0,0,0,.72),0 1px 4px rgba(0,0,0,.6)}
+  .beat .sub{margin:18px auto 0;max-width:32ch;font-size:clamp(1rem,1.7vw,1.22rem);line-height:1.5;
+    color:rgba(248,243,235,.88);text-shadow:0 1px 16px rgba(0,0,0,.75)}
+  /* cream turn-on */
+  #cream{position:absolute;inset:0;background:var(--ivory);opacity:0;pointer-events:none}
+
+  /* scroll cue */
+  #cue{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.3em;color:rgba(246,241,233,.55);text-transform:uppercase}
+  #cue .a{display:block;text-align:center;margin-top:8px;animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(5px);opacity:1}}
+
+  /* ---- surface (the light world) ---- */
+  #surface{position:relative;z-index:2;background:var(--ivory);color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .hero2{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 28px}
+  .hero2 .eb{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--coralDeep);margin-bottom:26px}
+  .hero2 h1{font-family:'Fraunces',serif;font-weight:600;line-height:.98;letter-spacing:-.02em;font-size:clamp(2.6rem,7vw,6rem);max-width:14ch}
+  .hero2 p{margin-top:26px;font-size:clamp(1.05rem,2vw,1.35rem);color:var(--inkSoft);max-width:52ch;line-height:1.5}
+  .cta{margin-top:40px;display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:17px;
+    background:var(--coralDeep);color:#FBF9F4;text-decoration:none;padding:17px 32px;border-radius:999px;
+    box-shadow:0 1px 2px rgba(27,26,23,.06),0 18px 40px -20px rgba(176,94,64,.7);transition:transform .15s, filter .15s}
+  .cta:hover{transform:translateY(-2px);filter:brightness(1.06)}
+  .cta:focus-visible{outline:3px solid rgba(204,120,92,.5);outline-offset:3px}
+  .builtwith{margin-top:34px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.05em;color:var(--inkSoft);opacity:.8}
+  .foot{border-top:1px solid var(--line);padding:30px 28px;display:flex;gap:14px;align-items:center;color:var(--inkSoft);font-size:13px}
+  .foot .mono{font-family:'JetBrains Mono',monospace}
+
+  @media (prefers-reduced-motion: reduce){
+    #heroTrack{height:auto}
+    #stage{position:relative;height:auto;min-height:100vh}
+    #film{position:absolute}
+    .beats{position:static}
+    .beat{position:relative;left:auto;top:auto;transform:none;opacity:1 !important;margin:0 auto;padding:46vh 0;width:min(90vw,760px)}
+    #cue{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="loader"><div style="text-align:center"><div class="l">igniting</div><div class="bar"><i id="lbar"></i></div></div></div>
+
+<div class="topbar" id="topbar">
+  <span class="wm">Marquee</span>
+  <a class="tlink" href="#" id="tlink">Try the demo →</a>
+</div>
+
+<!-- ===== HERO: scroll-driven infinite zoom ===== -->
+<div id="heroTrack">
+  <div id="stage">
+    <canvas id="film"></canvas>
+    <div id="scrim"></div>
+    <div class="beats" id="beats"></div>
+    <div id="cream"></div>
+    <div id="cue">scroll<span class="a">↓</span></div>
+  </div>
+</div>
+
+<!-- ===== SURFACE: the light world + CTA ===== -->
+<section id="surface">
+  <div class="hero2">
+    <div class="eb">— the show is yours —</div>
+    <h1 class="display">You answered a few questions. Marquee did the rest.</h1>
+    <p>One text. A few questions. Then the whole event — branding, website, Slack and sponsor emails — built and ready in hours.</p>
+    <a class="cta" id="cta" href="#">Try the Demo →</a>
+    <div class="builtwith">Built with Simular Sai · Midjourney · Claude Code · Browserbase · Redis · Arize</div>
+  </div>
+  <div class="foot">
+    <span class="wm display" style="font-weight:600;font-size:16px">Marquee</span>
+    <span class="mono" style="margin-left:auto">plan a whole event by chat</span>
+  </div>
+</section>
+
+<script>
+/* ============================================================================
+   Marquee landing — Midjourney infinite-zoom scroll.
+   Standalone. Never imports from ../app. The CTA bridges to the React app.
+   ============================================================================ */
+const PLATFORM_URL = 'http://localhost:5173'   // ← point this at the deployed app later
+document.getElementById('cta').href = PLATFORM_URL
+document.getElementById('tlink').href = PLATFORM_URL
+
+const N = 145                       // must match the extracted frame count (frames/)
+const pad = n => String(n).padStart(3, '0')
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v))
+const smooth = t => t*t*(3-2*t)
+
+/* ---- story beats (p = scroll progress, 0 = far void → 1 = the core/light) ---- */
+const BEATS = [
+  { p:0.10, big:'Marquee, your personal event planner.', sub:'' },
+  { p:0.34, big:'Tell it about your event.', sub:'Answer a few quick questions in a chat.' },
+  { p:0.56, big:'It builds everything for you.', sub:'Branding, a website, your Slack, and sponsor emails.' },
+  { p:0.78, big:'It checks before it spends or sends.', sub:'You stay in control — Marquee just needs your yes.' },
+]
+const beatsEl = document.getElementById('beats')
+const beatNodes = BEATS.map(b=>{
+  const d = document.createElement('div'); d.className='beat'
+  d.innerHTML = `<h2 class="display">${b.big}</h2>${b.sub?`<p class="sub">${b.sub}</p>`:''}`
+  beatsEl.appendChild(d); return d
+})
+
+/* ---- canvas + frames ---- */
+const canvas = document.getElementById('film')
+const ctx = canvas.getContext('2d',{alpha:false})
+const track = document.getElementById('heroTrack')
+const cream = document.getElementById('cream')
+const cue = document.getElementById('cue')
+const topbar = document.getElementById('topbar')
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const frames = []; let loaded=0, ready=false, cur=-1
+const lbar = document.getElementById('lbar')
+for(let i=0;i<N;i++){
+  const img = new Image()
+  img.onload = img.onerror = ()=>{ loaded++; lbar.style.width=(loaded/N*100)+'%'; if(loaded===N) start() }
+  img.src = `frames/frame_${pad(i)}.jpg`
+  frames[i]=img
+}
+
+function size(){
+  const dpr = Math.min(devicePixelRatio||1, 2)
+  canvas.width = Math.round(innerWidth*dpr); canvas.height = Math.round(innerHeight*dpr)
+  paint(cur<0?0:cur, true)
+}
+function paint(idx, force){
+  if((idx===cur && !force) || !frames[idx]) return
+  cur=idx; const img=frames[idx]
+  if(!img.complete || !img.naturalWidth) return
+  const w=canvas.width, h=canvas.height
+  const ir=img.naturalWidth/img.naturalHeight, cr=w/h
+  let dw,dh; if(ir>cr){dh=h;dw=h*ir}else{dw=w;dh=w/ir}
+  ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh)
+}
+function progress(){
+  const r = track.getBoundingClientRect()
+  return clamp(-r.top/(track.offsetHeight-innerHeight),0,1)
+}
+function plateau(p, c, half){ // ramp up, HOLD, ramp down — so each line dwells
+  const d = (p-(c-half))/(2*half)        // 0..1 across the window
+  if(d<=0 || d>=1) return 0
+  const f = 0.24                          // fraction spent fading in / out
+  if(d<f) return smooth(d/f)
+  if(d>1-f) return smooth((1-d)/f)
+  return 1
+}
+function update(){
+  const p = progress()
+  // FORWARD: scrolling down (p→1) flies forward through the venue to the lit stage
+  paint(Math.round(p*(N-1)))
+  // beats
+  for(let i=0;i<BEATS.length;i++){
+    const o = plateau(p, BEATS[i].p, 0.115)
+    const n = beatNodes[i]
+    n.style.opacity = o
+    n.style.transform = `translate(-50%,-50%) translateY(${(1-o)*10}px)`
+  }
+  // turn-on into the light near the end
+  cream.style.opacity = smooth(clamp((p-0.9)/0.1,0,1))
+  topbar.classList.toggle('dark', p>0.94)
+  cue.style.opacity = clamp(1 - p/0.06, 0, 1)
+}
+let ticking=false
+function onScroll(){ if(!ready||ticking)return; ticking=true; requestAnimationFrame(()=>{update();ticking=false}) }
+
+function start(){
+  if(ready) return; ready=true
+  document.getElementById('loader').classList.add('gone')
+  size(); update()
+  addEventListener('scroll', onScroll, {passive:true})
+  addEventListener('resize', ()=>{size();update()})
+  if(reduce){ // static fallback: show a mid frame, beats are stacked by CSS
+    paint(Math.round(N*0.5), true)
+  }
+}
+setTimeout(()=>{ if(!ready) start() }, 9000) // safety
+</script>
+</body>
+</html>
