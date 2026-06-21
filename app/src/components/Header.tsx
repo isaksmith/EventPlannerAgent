@@ -22,16 +22,9 @@ export function Header(props: {
   return (
     <header className="border-b border-line bg-canvas/80 backdrop-blur sticky top-0 z-30">
       <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-2.5">
-          <svg width="32" height="28" viewBox="0 0 32 28" aria-hidden="true">
-            <path d="M10 7 L16 2 L22 7" fill="none" stroke="#CC785C" strokeWidth="2" strokeLinecap="round" />
-            <rect x="3" y="7" width="26" height="15" rx="4" fill="#CC785C" />
-            <circle cx="10" cy="14.5" r="2" fill="#FBF9F4" /><circle cx="16" cy="14.5" r="2" fill="#FBF9F4" /><circle cx="22" cy="14.5" r="2" fill="#FBF9F4" />
-          </svg>
-          <div>
-            <div className="font-display text-[19px] font-semibold tracking-tight leading-none">Marquee</div>
-            <div className="text-[11px] text-inkSoft leading-none mt-1">plan your whole event by chat</div>
-          </div>
+        <div>
+          <div className="font-display text-[19px] font-semibold tracking-tight leading-none">Marquee</div>
+          <div className="text-[11px] text-inkSoft leading-none mt-1">plan your whole event by chat</div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-[10px] uppercase tracking-wider text-inkSoft/70 mr-1 hidden md:block">demo</span>
