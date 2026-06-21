@@ -103,6 +103,12 @@ def _clear_session_artifacts(session_id: str) -> None:
 @router.delete("/session")
 async def delete_session(phone: str = Query(...)) -> dict[str, bool]:
     store = get_session_store()
+    profile = await store.get(phone)
+    archived: str | None = None
+    if profile is not None:
+        from app.memory.event_archive import archive_event
+
+        archived = archive_event(profile)
     await store.delete(phone)
     _clear_session_artifacts(phone)
-    return {"ok": True}
+    return {"ok": True, "archived": bool(archived)}

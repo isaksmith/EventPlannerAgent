@@ -145,6 +145,12 @@ async def test_build_and_deploy_site_public_url(hackathon_profile, tmp_path, mon
 
     get_settings.cache_clear()
 
+    # Simulate Vercel unavailable so we exercise the self-hosted public_base_url fallback.
+    async def _no_vercel(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr("app.integrations.claude_code.deploy_site_to_vercel", _no_vercel)
+
     hackathon_profile = await generate_brand_assets(hackathon_profile)
     profile = await build_and_deploy_site(hackathon_profile)
     assert profile.artifacts.site_url.startswith("https://demo.ngrok-free.dev/sites/")

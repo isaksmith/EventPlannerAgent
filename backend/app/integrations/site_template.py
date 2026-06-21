@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from app.memory.schema import EventProfile, EventType
 
@@ -255,6 +257,72 @@ def _audience_block_html(profile: EventProfile) -> str:
       </div>"""
 
 
+# Location qualifiers that are not mappable physical places.
+_NON_MAPPABLE_TOKENS = {
+    "",
+    "tbd",
+    "location tbd",
+    "in person",
+    "in-person",
+    "virtual",
+    "online",
+    "remote",
+    "hybrid",
+}
+
+
+def _clean_location_query(location: str) -> str:
+    """Strip format qualifiers (e.g. 'in person') so the map query is a real place."""
+    parts = re.split(r"[·•|]+", location)
+    kept = [p.strip() for p in parts if p.strip() and p.strip().lower() not in _NON_MAPPABLE_TOKENS]
+    return ", ".join(kept).strip()
+
+
+def _is_mappable(location: str | None) -> bool:
+    if not location:
+        return False
+    return bool(_clean_location_query(location))
+
+
+def _map_section_html(profile: EventProfile) -> str:
+    location = profile.event.location
+    if not _is_mappable(location):
+        return ""
+    query = _clean_location_query(location or "")
+    embed_url = f"https://www.google.com/maps?q={quote_plus(query)}&output=embed&z=17"
+    directions_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(query)}"
+    return f"""
+  <section class="section map-section" id="location" aria-labelledby="location-heading">
+    <div class="section-head">
+      <p class="eyebrow">Getting there</p>
+      <h2 id="location-heading" class="display-heading">Find the venue</h2>
+    </div>
+    <div class="map-layout">
+      <div class="map-info">
+        <div class="info-block" style="margin-top:0">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <div>
+            <p class="info-label">Venue</p>
+            <p class="info-value">{location}</p>
+          </div>
+        </div>
+        <a class="btn btn-primary" href="{directions_url}" target="_blank" rel="noopener noreferrer">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+          </svg>
+          Get directions
+        </a>
+      </div>
+      <div class="map-frame">
+        <iframe title="Map showing {query}" src="{embed_url}" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>"""
+
+
 def _gallery_section_html(profile: EventProfile) -> str:
     del profile
     items = [
@@ -316,6 +384,7 @@ def render_event_site(profile: EventProfile) -> str:
         "{{REGISTRATION_FIELDS}}": _registration_fields_html(profile),
         "{{AUDIENCE_BLOCK}}": _audience_block_html(profile),
         "{{GALLERY_SECTION}}": _gallery_section_html(profile),
+        "{{MAP_SECTION}}": _map_section_html(profile),
         "{{SPONSOR_SECTION}}": _sponsor_section_html(profile),
         "{{PLATFORM_LINKS}}": _platform_links_html(profile),
     }

@@ -164,35 +164,6 @@ https://<your-ngrok-domain>/sites/<session-id>/
 
 View execution traces at `GET /admin/traces` (for pitch / debugging).
 
-## Arize AI (observability)
-
-Traces export to [Arize AX](https://arize.com) when credentials are set in `.env`:
-
-```
-ARIZE_ENABLED=true
-ARIZE_API_KEY=ak-...
-ARIZE_SPACE_ID=...
-ARIZE_PROJECT_NAME=orchestrateai
-```
-
-Install tracing deps (once disk space allows):
-
-```bash
-cd backend
-source .venv/bin/activate
-pip install arize-otel opentelemetry-instrumentation-httpx
-```
-
-Configure the AX CLI profile from `.env`:
-
-```bash
-python scripts/setup_arize_auth.py
-# then: pipx install arize-ax-cli  (or uv tool install arize-ax-cli)
-ax profiles show && ax projects list
-```
-
-Every orchestrator/integration span (`intent.classify`, `midjourney.logo`, `claude.build`, …) is emitted as an OpenTelemetry span when Arize is enabled. The Marquee dashboard polls `GET /admin/traces` for the live trace panel.
-
 ## Site generation (UI/UX Pro Max + OpenRouter)
 
 **Poke handles chat only** (interview, APPROVE, handoff). **Every APPROVE** builds a custom registration site:

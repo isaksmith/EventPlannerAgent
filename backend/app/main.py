@@ -12,8 +12,8 @@ from fastmcp.utilities.lifespan import combine_lifespans
 
 from app.config import get_settings
 from app.mcp.server import mcp_app
-from app.observability.arize import get_tracer
 from app.routes.admin import router as admin_router
+from app.routes.archive import router as archive_router
 from app.routes.assets import router as assets_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.sites import router as sites_router
@@ -25,12 +25,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     settings = get_settings()
-    tracer = get_tracer(settings)
-    logger.info(
-        "OrchestrateAI backend starting (env=%s arize=%s)",
-        settings.app_env,
-        tracer.enabled,
-    )
+    logger.info("OrchestrateAI backend starting (env=%s)", settings.app_env)
     yield
     logger.info("OrchestrateAI backend shutting down")
 
@@ -87,6 +82,7 @@ def create_app() -> FastAPI:
 
     app.include_router(poke_router)
     app.include_router(dashboard_router)
+    app.include_router(archive_router)
     app.include_router(assets_router)
     app.include_router(admin_router)
     app.include_router(sites_router)

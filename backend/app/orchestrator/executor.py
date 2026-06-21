@@ -115,9 +115,6 @@ def format_handoff_message(profile: EventProfile) -> str:
         lines.append(f"• Manual guides: {len(a.fallback_guides)} (on site + in session)")
     lines.append(f"• Outreach drafts: {len(a.outreach_drafts)}")
     lines.append("")
-    if a.site_url and "ngrok" in a.site_url:
-        lines.append("Tip: On first visit, tap *Visit Site* on the ngrok page.")
-        lines.append("")
     lines.append("Reply SEND / EDIT / SKIP per draft, or ALL-SKIP to finish.")
     return "\n".join(lines)
 

@@ -67,15 +67,12 @@
       <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan to-violet grid place-items-center font-bold text-ink">O</div>
       <div>
         <div class="font-semibold tracking-tight leading-none">OrchestrateAI</div>
-        <div class="text-[11px] text-slate-500 leading-none mt-1" id="modeLabel">desktop platform · mock prototype</div>
+        <div class="text-[11px] text-slate-500 leading-none mt-1">desktop platform · mock prototype · everything is faked</div>
       </div>
     </div>
 
     <div class="ml-auto flex items-center gap-2">
       <span id="phaseLabel" class="text-xs text-slate-400 mr-1 hidden sm:block">Phase 0 · Initiation</span>
-      <input id="apiBaseInput" type="text" value="http://127.0.0.1:8000" title="Backend API URL"
-        class="hidden lg:block w-44 px-2 py-1 rounded-md text-[11px] mono bg-panel2 border border-line text-slate-400" />
-      <button id="liveBtn" class="px-3 py-1.5 rounded-md text-sm border border-cyan/50 text-cyan hover:bg-cyan/10">● Live backend</button>
       <button id="resetBtn"  class="px-3 py-1.5 rounded-md text-sm border border-line text-slate-300 hover:bg-panel">Reset</button>
       <button id="autoBtn"   class="px-3 py-1.5 rounded-md text-sm border border-line text-slate-300 hover:bg-panel">▶ Auto-play</button>
       <button id="nextBtn"   class="px-4 py-1.5 rounded-md text-sm font-medium bg-cyan text-ink hover:brightness-110">Next ▸</button>
@@ -117,8 +114,8 @@
         <!-- gate actions / input -->
         <div id="consoleActions" class="px-3 py-2.5 border-t border-line/60 min-h-[56px] flex flex-wrap gap-2 items-center"></div>
       </div>
-      <div class="text-[10.5px] text-slate-600 mt-2 mono leading-relaxed" id="consoleHint">
-        Mock mode: use Next / Auto-play. Live mode: type messages below (same API as Poke SMS).
+      <div class="text-[10.5px] text-slate-600 mt-2 mono leading-relaxed">
+        SMS / iMessage is a later layer — for now the conversation lives here on the desktop.
       </div>
     </div>
   </section>
@@ -393,140 +390,8 @@ const STEPS = [
 const $ = id => document.getElementById(id);
 const PHASES = ['Initiation','Interview','Consensus','Execution','Handoff','Delivery'];
 let idx = -1, waiting = false, auto = false, autoTimer = null;
-let liveMode = false;
-let sending = false;
-const DASHBOARD_PHONE = 'phone:dashboard-demo';
 const profile = { session_id:'session:demo-001', status:'interviewing', event:{}, audience:{}, aesthetic:{}, ops:{}, outreach:{}, artifacts:{} };
 let arizeMs = 0, arizeCost = 0;
-
-function apiBase(){ return ($('apiBaseInput')?.value || 'http://127.0.0.1:8000').replace(/\/$/, ''); }
-
-function liveInput(){
-  return `<form id="liveForm" class="flex gap-2 w-full">
-    <input id="liveInput" autocomplete="off" placeholder="Type PLAN to start, or your answer…"
-      class="flex-1 bg-panel2 border border-line rounded-lg px-3 py-2 text-[12px] text-slate-200 placeholder:text-slate-600" />
-    <button type="submit" class="px-3 py-2 rounded-lg text-[12px] font-medium bg-cyan text-ink hover:brightness-110">Send</button>
-  </form>`;
-}
-
-async function refreshSession(){
-  try{
-    const res = await fetch(`${apiBase()}/api/session?phone=${encodeURIComponent(DASHBOARD_PHONE)}`);
-    if(!res.ok) return;
-    const data = await res.json();
-    Object.assign(profile, data);
-    renderRedis();
-    syncPanelsFromProfile(data);
-  }catch(_e){ /* backend offline */ }
-}
-
-async function refreshTraces(){
-  try{
-    const res = await fetch(`${apiBase()}/admin/traces`);
-    if(!res.ok) return;
-    const data = await res.json();
-    const list = $('arize-list');
-    list.innerHTML = '';
-    arizeMs = 0; arizeCost = 0;
-    (data.spans || []).forEach(s=>{
-      arizeAdd({ node: s.name, ms: s.latency_ms || 0, cost: 0, warn: false });
-    });
-  }catch(_e){}
-}
-
-function syncPanelsFromProfile(data){
-  const st = data.status || '';
-  if(st === 'interviewing') setPhase(1);
-  else if(st === 'awaiting_approval'){ setPhase(2); tierHighlight(2); }
-  else if(st === 'executing'){ setPhase(3); tierHighlight(1); }
-  else if(st === 'awaiting_handoff'){ setPhase(4); tierHighlight(3); }
-  else if(st === 'done') setPhase(5);
-
-  saiUpdate({ stat: st === 'done' ? 'done' : st === 'executing' ? 'active' : 'idle', node: st || 'init' });
-
-  const a = data.artifacts || {};
-  if(a.site_url){
-    deploy('done');
-    $('deploy-url').textContent = a.site_url.replace(/^https?:\/\//,'');
-  }
-  if(a.slack_url){
-    browserbase('slack');
-    const list = $('bb-list');
-    if(list && !list.textContent.includes(a.slack_url)){
-      const d = document.createElement('div'); d.className = 'fade-in text-lime pl-3 break-all';
-      d.textContent = '✓ ' + a.slack_url; list.appendChild(d);
-    }
-  }
-  if((a.outreach_drafts || []).length){
-    outreach();
-    const list = $('out-list');
-    list.innerHTML = '';
-    a.outreach_drafts.forEach((draft,i)=>setTimeout(()=>{
-      const d=document.createElement('div'); d.className='fade-in rounded-lg border border-line bg-panel2 p-2';
-      d.innerHTML=`<div class="text-[10px] text-slate-300 whitespace-pre-line">${draft.slice(0,120)}…</div>
-        <div class="mt-1 text-[9px] inline-block px-1.5 py-0.5 rounded bg-rose/10 text-rose border border-rose/30">DRAFT</div>`;
-      list.appendChild(d);
-    }, i*80));
-  }
-  if((a.asset_urls || []).length) creative('done');
-}
-
-async function sendLiveMessage(text){
-  const body = text.trim();
-  if(!body || sending) return;
-  sending = true;
-  consoleMsg('user', body);
-  $('consoleActions').innerHTML = '<span class="text-[11px] text-slate-500">Sai is thinking…</span>';
-  try{
-    const res = await fetch(`${apiBase()}/webhooks/poke`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: DASHBOARD_PHONE, body }),
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
-    (data.replies || []).forEach(r => consoleMsg('sai', r));
-    await refreshSession();
-    await refreshTraces();
-  }catch(err){
-    consoleMsg('sai', 'Backend error — is uvicorn running on '+apiBase()+'?\n'+err.message);
-  }
-  sending = false;
-  mountConsoleInput();
-}
-
-function mountConsoleInput(){
-  const bar = $('consoleActions');
-  if(liveMode){
-    bar.innerHTML = liveInput();
-    $('liveForm').onsubmit = e => { e.preventDefault(); sendLiveMessage($('liveInput').value); $('liveInput').value=''; };
-    $('liveInput')?.focus();
-  } else if(!waiting) {
-    bar.innerHTML = idleInput();
-  }
-}
-
-function setLiveMode(on){
-  liveMode = on;
-  stopAuto();
-  $('liveBtn').textContent = on ? '● Live ON' : '○ Live backend';
-  $('liveBtn').className = on
-    ? 'px-3 py-1.5 rounded-md text-sm border border-lime/50 text-lime bg-lime/10'
-    : 'px-3 py-1.5 rounded-md text-sm border border-cyan/50 text-cyan hover:bg-cyan/10';
-  $('modeLabel').textContent = on ? 'live backend · '+apiBase() : 'desktop platform · mock prototype';
-  $('autoBtn').classList.toggle('hidden', on);
-  $('nextBtn').classList.toggle('hidden', on);
-  $('consoleHint').textContent = on
-    ? 'Live: type PLAN, answer questions, APPROVE — same flow as Poke SMS.'
-    : 'Mock mode: use Next / Auto-play. Live mode: type messages below.';
-  if(on){
-    $('consoleThread').innerHTML = '';
-    mountConsoleInput();
-    refreshSession();
-  } else {
-    mountConsoleInput();
-  }
-}
 
 function buildRail(){
   $('phaseRail').innerHTML = PHASES.map((p,i)=>`
@@ -573,10 +438,10 @@ function consoleMsg(from,text,actions){
       const c = a.kind==='lime'?'bg-lime text-ink':a.kind==='rose'?'bg-rose text-ink':'border border-line text-slate-300 hover:bg-panel';
       b.className = `px-3 py-1.5 rounded-full text-[12px] font-medium ${c}`;
       b.textContent = a.label;
-      b.onclick = ()=>{ consoleMsg('user', a.reply); bar.innerHTML=liveMode?liveInput():idleInput(); if(liveMode) sendLiveMessage(a.reply); else { waiting=false; advance(); } };
+      b.onclick = ()=>{ consoleMsg('user', a.reply); bar.innerHTML=idleInput(); waiting=false; advance(); };
       bar.appendChild(b);
     });
-  } else if(!liveMode) {
+  } else {
     bar.innerHTML = idleInput();
   }
 }
@@ -695,7 +560,7 @@ function applyStep(s){
 }
 
 function advance(){
-  if(liveMode || waiting) return;
+  if(waiting) return;            // blocked at a human-in-the-loop gate
   if(idx >= STEPS.length-1){ stopAuto(); $('nextBtn').textContent='✓ Done'; $('nextBtn').disabled=true; $('nextBtn').classList.add('opacity-40'); return; }
   idx++;
   applyStep(STEPS[idx]);
@@ -706,24 +571,9 @@ function advance(){
 
 function startAuto(){ auto=true; $('autoBtn').textContent='⏸ Pause'; tick(); }
 function stopAuto(){ auto=false; $('autoBtn').textContent='▶ Auto-play'; clearTimeout(autoTimer); }
-function tick(){ if(!auto || liveMode) return; if(!waiting && idx<STEPS.length-1){ advance(); } autoTimer=setTimeout(tick, waiting?700:1300); }
+function tick(){ if(!auto) return; if(!waiting && idx<STEPS.length-1){ advance(); } autoTimer=setTimeout(tick, waiting?700:1300); }
 
-function reset(){
-  if(liveMode){
-    fetch(`${apiBase()}/api/session?phone=${encodeURIComponent(DASHBOARD_PHONE)}`, { method:'DELETE' }).catch(()=>{});
-    $('consoleThread').innerHTML='';
-    Object.assign(profile, { session_id:DASHBOARD_PHONE, status:'interviewing', event:{}, audience:{}, aesthetic:{}, ops:{}, outreach:{}, artifacts:{} });
-    renderRedis();
-    setPhase(0);
-    mountConsoleInput();
-    return;
-  }
-  location.reload();
-}
-
-$('liveBtn').onclick = ()=> setLiveMode(!liveMode);
-$('apiBaseInput').onchange = ()=> localStorage.setItem('orchestrate_api', apiBase());
-if(localStorage.getItem('orchestrate_api')) $('apiBaseInput').value = localStorage.getItem('orchestrate_api');
+function reset(){ location.reload(); }
 
 $('nextBtn').onclick = advance;
 $('autoBtn').onclick = ()=> auto ? stopAuto() : startAuto();

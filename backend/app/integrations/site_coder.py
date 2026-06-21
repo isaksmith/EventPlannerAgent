@@ -87,12 +87,20 @@ Workspace layout (already prepared):
 
 Requirements for index.html:
 1. Apply the UI/UX Pro Max design system to tailor the page to this event.
-2. Keep registration: form submits via JavaScript fetch to "./register" POST + FormData.
-   Include header: { "ngrok-skip-browser-warning": "true" }. On success, document.write response HTML.
+2. Keep registration: form submits via JavaScript fetch to "./register" POST with
+   body = new URLSearchParams(new FormData(form)) and header
+   { "Content-Type": "application/x-www-form-urlencoded" }. On success, document.write response HTML.
+   (Do not change the "./register" path — deployment rewrites it to the serverless handler.)
 3. Registration fields must match ops.registration_fields from the profile.
 4. Reference brand assets from ./assets/ with onerror fallbacks for missing files.
 5. Show event name, dates, location, expected attendees, vibe/theme prominently.
-6. Link slack_url / devpost_url from artifacts when present.
+6. When the event has a physical location (event.location, not "TBD"/"virtual"/"online"), include a
+   "Getting there" location section with an embedded Google Maps iframe. Use the keyless embed
+   src="https://www.google.com/maps?q=<URL-encoded location>&output=embed&z=17" (strip qualifiers like
+   "· in person" from the query), give the iframe a descriptive title, loading="lazy", and add a
+   "Get directions" link to https://www.google.com/maps/search/?api=1&query=<URL-encoded location>.
+   Skip this section for purely virtual/online events.
+7. Link slack_url / devpost_url from artifacts when present.
 7. Single self-contained index.html (Tailwind CDN or embedded CSS OK). Optional assets/styles.css.
 8. Do not delete event_profile.json, UI_UX_DESIGN_SYSTEM.md, or files in assets/.
 

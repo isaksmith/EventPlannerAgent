@@ -1,0 +1,69 @@
+{
+  "session_id": "phone:dashboard-demo",
+  "status": "executing",
+  "event": {
+    "name": "AI Hackathon Berkeley",
+    "type": "hackathon",
+    "type_label": "",
+    "dates": "July 7, 2027",
+    "location": "Berkeley, CA",
+    "expected_attendees": 1200,
+    "format": "in_person"
+  },
+  "budget": {
+    "total_usd": 1000,
+    "paid_tools_allowed": true
+  },
+  "audience": {
+    "description": "CS, CE majors",
+    "technical_level": "general",
+    "geography": ""
+  },
+  "aesthetic": {
+    "vibe": "Yellow, Blue, Hackathon, Academic",
+    "theme": "Academic, Tech",
+    "colors": [
+      "blue"
+    ],
+    "references": []
+  },
+  "ops": {
+    "needs_slack": true,
+    "needs_devpost": false,
+    "registration_fields": []
+  },
+  "outreach": {
+    "sponsor_targets": [
+      "Anthropic",
+      "Midjourney"
+    ],
+    "channels": [
+      "email"
+    ]
+  },
+  "artifacts": {
+    "asset_urls": [
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_cover.png",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_hero.jpg",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_motif.png",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_social.jpg"
+    ],
+    "asset_dir": "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo",
+    "promo_video_url": "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/promo.txt",
+    "site_url": "",
+    "slack_url": "https://eventplanneragent.slack.com",
+    "devpost_url": "",
+    "outreach_drafts": [],
+    "fallback_guides": [],
+    "browserbase_session_urls": [],
+    "site_verified": false,
+    "qa_screenshot_path": ""
+  },
+  "approvals": {
+    "plan_approved": true,
+    "handoff_decisions": []
+  },
+  "interview_step": "done",
+  "pending_question": null,
+  "hyperframe_id": "15ac53ed-00b2-4667-81d0-4477a2c8567f"
+}

@@ -1,0 +1,62 @@
+{
+  "session_id": "phone:dashboard-demo",
+  "status": "executing",
+  "event": {
+    "name": "Kristy's Birthday Party",
+    "type": "party",
+    "type_label": "",
+    "dates": "July 27th",
+    "location": "8211 W Palmetto St",
+    "expected_attendees": 10,
+    "format": "in_person"
+  },
+  "budget": {
+    "total_usd": 100,
+    "paid_tools_allowed": false
+  },
+  "audience": {
+    "description": "Kritsy's friends and family",
+    "technical_level": "",
+    "geography": ""
+  },
+  "aesthetic": {
+    "vibe": "Floral, feminine, cute",
+    "theme": "Cute, fun, feminine",
+    "colors": [],
+    "references": []
+  },
+  "ops": {
+    "needs_slack": false,
+    "needs_devpost": false,
+    "registration_fields": []
+  },
+  "outreach": {
+    "sponsor_targets": [],
+    "channels": []
+  },
+  "artifacts": {
+    "asset_urls": [
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_cover.png",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_hero.jpg",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_motif.jpg",
+      "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/invite_social.png"
+    ],
+    "asset_dir": "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo",
+    "promo_video_url": "/Users/isaksmith/.cursor/worktrees/EventPlannerAgent/milestone-1/backend/var/assets/phone_dashboard-demo/promo.txt",
+    "site_url": "",
+    "slack_url": "",
+    "devpost_url": "",
+    "outreach_drafts": [],
+    "fallback_guides": [],
+    "browserbase_session_urls": [],
+    "site_verified": false,
+    "qa_screenshot_path": ""
+  },
+  "approvals": {
+    "plan_approved": true,
+    "handoff_decisions": []
+  },
+  "interview_step": "done",
+  "pending_question": null,
+  "hyperframe_id": "3cb8290f-022a-496c-a5cb-31f404c3343a"
+}

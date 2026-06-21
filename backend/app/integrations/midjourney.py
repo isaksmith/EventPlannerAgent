@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.config import Settings, get_settings
+from app.integrations.image_prompt_smith import craft_invite_prompts
 from app.integrations.midjourney_mcp import generate_invite_assets_via_mcp, mcp_configured
 from app.integrations.openrouter_auth import openrouter_images_ready
 from app.integrations.openrouter_images import generate_invite_assets_via_openrouter
@@ -214,6 +215,7 @@ async def generate_brand_assets(
     asset_dir = _session_asset_dir(profile, cfg)
     _clear_previous_brand_assets(asset_dir)
     briefs = build_invite_asset_briefs(profile)
+    briefs = await craft_invite_prompts(profile, briefs, cfg)
 
     async with tracer.span("midjourney.generate", session_id=profile.session_id):
         paths: list[str] | None = None

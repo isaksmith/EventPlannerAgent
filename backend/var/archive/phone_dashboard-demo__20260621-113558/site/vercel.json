@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/register",
+      "destination": "/api/register"
+    }
+  ]
+}

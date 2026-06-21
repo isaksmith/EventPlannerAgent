@@ -4,13 +4,11 @@ import logging
 import shutil
 from pathlib import Path
 
-import httpx
-
 from app.config import Settings, get_settings
 from app.integrations.site_generation import generate_site_html
 from app.integrations.site_template import render_event_site, seed_event_site
-from app.integrations.site_workspace import prepare_site_workspace
 from app.integrations.token_compression import compress_profile_context
+from app.integrations.vercel_deploy import deploy_site_to_vercel
 from app.memory.schema import EventProfile
 from app.observability.arize import get_tracer
 
@@ -47,26 +45,10 @@ def _session_slug(profile: EventProfile) -> str:
 
 
 def _public_site_url(profile: EventProfile, settings: Settings, slug: str) -> str | None:
+    """Optional fallback to a self-hosted public base (e.g. tunnel) when Vercel is unavailable."""
     if settings.public_base_url:
         return f"{settings.public_base_url.rstrip('/')}/sites/{slug}/"
     return None
-
-
-async def _deploy_vercel(build_dir: Path, project_name: str, settings: Settings) -> str | None:
-    if not settings.vercel_token:
-        return None
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "https://api.vercel.com/v13/deployments",
-            headers={"Authorization": f"Bearer {settings.vercel_token}"},
-            json={"name": project_name, "target": "production"},
-            timeout=60.0,
-        )
-        if response.status_code >= 400:
-            logger.warning("Vercel deploy failed: %s", response.status_code)
-            return None
-        data = response.json()
-        return data.get("url") or data.get("alias", [None])[0]
 
 
 async def build_and_deploy_site(
@@ -80,18 +62,16 @@ async def build_and_deploy_site(
     async with tracer.span("claude_code.build", session_id=profile.session_id, context_len=len(context)):
         build_dir = _session_build_dir(profile, cfg)
         _copy_assets_into_build(profile, build_dir)
-        prepare_site_workspace(build_dir, profile)
 
         index_path = build_dir / "index.html"
-        agent_ok = False
-        if cfg.opencode_enabled:
-            agent_ok, agent_msg = await generate_site_html(build_dir, profile, cfg)
-            if agent_ok:
-                logger.info("OpenCode site build: %s", agent_msg)
-            else:
-                logger.info("OpenCode skipped or failed (%s); using Marquee template", agent_msg)
+        # generate_site_html runs the full pipeline (UI/UX Pro Max design system +
+        # OpenRouter site coder primary, OpenCode optional, Marquee template fallback)
+        # and seeds the workspace itself, so always invoke it.
+        agent_ok, agent_msg = await generate_site_html(build_dir, profile, cfg)
+        if agent_ok:
+            logger.info("Site build: %s", agent_msg)
         else:
-            logger.info("OpenCode disabled; site from Marquee template at %s", index_path)
+            logger.warning("Site generation failed (%s); using Marquee template", agent_msg)
 
         if not index_path.is_file():
             seed_event_site(build_dir, profile)
@@ -105,16 +85,20 @@ async def build_and_deploy_site(
         schema_path.write_text(profile.model_dump_json(indent=2), encoding="utf-8")
 
         slug = _session_slug(profile)
-        deploy_url = await _deploy_vercel(build_dir, f"orchestrate-{slug}", cfg)
+        deploy_url = await deploy_site_to_vercel(
+            build_dir,
+            slug=slug,
+            event_name=profile.event.name or "Your Event",
+            settings=cfg,
+        )
         public_url = _public_site_url(profile, cfg, slug)
 
         if deploy_url:
-            profile.artifacts.site_url = (
-                f"https://{deploy_url}" if not deploy_url.startswith("http") else deploy_url
-            )
+            profile.artifacts.site_url = deploy_url
+            logger.info("Site deployed to Vercel: %s", deploy_url)
         elif public_url:
             profile.artifacts.site_url = public_url
-            logger.info("Public site URL via ngrok: %s", public_url)
+            logger.info("Vercel unavailable; using self-hosted public URL: %s", public_url)
         else:
             profile.artifacts.site_url = f"file://{index_path.resolve()}"
             logger.info("Site written to %s", index_path)
