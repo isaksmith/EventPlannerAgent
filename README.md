@@ -19,7 +19,7 @@ The build targets the **UC Berkeley AI Hackathon 2026** as its pilot event.
 | Path | Stack | Role |
 | --- | --- | --- |
 | [`app/`](app) | React 18 + Vite 5 + Tailwind 3 + TypeScript | The planning dashboard — chat panel + live deliverable cards (brand, website, outreach, location) with mocked-integration seams. |
-| [`backend/`](backend) | Python 3.11 + FastAPI + Redis + OpenTelemetry/Arize + FastMCP | The orchestration engine: Sai dispatcher, state machine, memory, integrations, webhooks, routes. See [`backend/README.md`](backend/README.md). |
+| [`backend/`](backend) | Python 3.11 + FastAPI + Redis + OpenTelemetry/Arize + FastMCP | The orchestration engine: dispatcher / interview loop, state machine, memory, integrations, webhooks, routes. See [`backend/README.md`](backend/README.md). |
 | [`landing/`](landing) | Static HTML + committed scroll-hero frames | Standalone marketing landing page. Does **not** depend on `app/`; the only link is its "Try the Demo" button. See [`landing/README.md`](landing/README.md). |
 | [`docs/superpowers/`](docs/superpowers) | Markdown | Narrative design + spec notes. |
 | [`skills-lock.json`](skills-lock.json) | JSON | Pinned external skill manifests (Arize, etc.) used by the backend. |
@@ -33,11 +33,11 @@ backend orchestrates real integrations and serves generated assets/sites.
 
 ```mermaid
 flowchart TD
-    User([Organizer]) --> Chat[Chat dashboard<br/>app/ — React + Vite]
-    Chat -->|typed API| API[FastAPI backend<br/>backend/app]
-    API --> Sai[Sai dispatcher<br/>interview loop]
-    Sai -->|read/write profile| Redis[(Redis<br/>EventProfile)]
-    Sai -->|consensus summary| Gate{Human<br/>APPROVE?}
+    User([Organizer]) --> Chat[Chat dashboard<br/>React + Vite — Vercel]
+    Chat -->|typed API| API[FastAPI backend<br/>Railway]
+    API --> Orch[Dispatcher<br/>interview loop]
+    Orch -->|read/write profile| Redis[(Redis<br/>Railway — EventProfile)]
+    Orch -->|consensus summary| Gate{Human<br/>APPROVE?}
     Gate -->|approve| Fan[Execution fan-out]
 
     Fan --> Brand[Branding pipeline]
@@ -45,14 +45,14 @@ flowchart TD
     Fan --> Platform[Platform automation]
     Fan --> Outreach[Outreach drafting]
 
-    Brand --> Img[OpenRouter image<br/>→ Midjourney MCP → SVG stub]
+    Brand --> Img[OpenRouter image<br/>gpt-5.4-image-2 → SVG stub]
     Site --> Coder[UI/UX Pro Max +<br/>OpenRouter coder → index.html]
-    Coder --> Vercel[Vercel deploy]
+    Coder --> VercelDeploy[Vercel deploy]
     Platform --> BB[Browserbase<br/>Slack + Devpost]
     Outreach --> Emails[Drafted sponsor emails]
 
     Img -.assets.-> Assets[Generated assets<br/>var/assets]
-    Vercel -.url.-> LiveSite[Live registration site]
+    VercelDeploy -.url.-> LiveSite[Live registration site<br/>Vercel]
     BB -.config.-> Platforms[Slack workspace<br/>Devpost draft]
 
     Assets --> Handoff[Dashboard cards + hand-off<br/>URL + credentials + drafts]
@@ -64,8 +64,10 @@ flowchart TD
 
     classDef store fill:#FBF9F4,stroke:#D9D2C4,color:#1B1A17;
     classDef human fill:#F6E6DE,stroke:#B05E40,color:#1B1A17;
+    classDef cloud fill:#E8F0FE,stroke:#4285F4,color:#1B1A17;
     class Redis,Archive,Past store;
     class Gate,User human;
+    class Chat,API,Redis,VercelDeploy,LiveSite cloud;
 ```
 
 The agent **calibrates autonomy to stakes**: it runs reversible, low-risk work on
@@ -75,6 +77,13 @@ money or relationships. Drafts are produced; the human sends.
 ---
 
 ## Quick start
+
+The app is hosted — you can use it without running anything locally:
+
+- **Dashboard:** https://app-rii5cmlei-isaksmiths-projects.vercel.app/
+- **Backend API:** https://backend-production-d01d4.up.railway.app/health
+
+To run locally for development:
 
 ### 1. Backend (FastAPI on `:8000`)
 
@@ -96,6 +105,11 @@ cd backend
 docker compose up --build
 ```
 
+Deployed backend (Railway): the `backend` service builds from
+`backend/Dockerfile` (which honors Railway's `$PORT`), backed by a Railway-managed
+Redis. Push env vars via `railway variables set --service backend …` and redeploy
+with `railway up --service backend`.
+
 The backend expects a Redis at `REDIS_URL` (default `redis://localhost:6379/0`).
 The dashboard, asset, site, and webhook routers are mounted under
 `/`, `/assets`, `/sites`, `/webhooks`, and the FastMCP server under `/mcp`.
@@ -109,7 +123,8 @@ npm run dev
 ```
 
 Open http://localhost:5173 — the dashboard proxies API calls to
-`http://127.0.0.1:8000` in dev (see `app/vite.config.ts`).
+`http://127.0.0.1:8000` in dev (see `app/vite.config.ts`). For the deployed
+build, `VITE_API_BASE` points the frontend at the Railway backend.
 
 **Demo mode** (default) drives a canned timeline with mocked integrations —
 use **Next** and **Auto-play** to advance. The chat input is intentionally
@@ -145,12 +160,12 @@ for the full list. Highlights:
   real OpenTelemetry export when set; no-op otherwise.
 
 **Creative / image generation**
-- `MIDJOURNEY_MCP_*` — Midjourney MCP for hero/brand assets (fallback).
 - `OPENROUTER_API_KEY`, `OPENROUTER_IMAGE_ENABLED`, `OPENROUTER_IMAGE_MODEL`,
-  `OPENROUTER_IMAGE_PRIMARY` — OpenRouter image generation. When
-  `OPENROUTER_IMAGE_PRIMARY=true`, OpenRouter runs first and Midjourney MCP is
-  the fallback; otherwise the order is reversed. Local SVG stubs are the last
-  resort when neither is configured.
+  `OPENROUTER_IMAGE_PRIMARY` — OpenRouter image generation (primary; currently
+  `openai/gpt-5.4-image-2`). An `image-prompt-smith` skill (DeepSeek) refines
+  the prompt before the image call. Local SVG stubs are the last resort when
+  OpenRouter is disabled or fails.
+- `MIDJOURNEY_MCP_*` — optional Midjourney MCP fallback for hero/brand assets.
 
 **Site generation**
 - `OPENROUTER_MODEL`, `SITE_CODER_ENABLED`, `UI_UX_PRO_MAX_ENABLED` — primary
@@ -189,7 +204,7 @@ for the full list. Highlights:
 │   ├── app/
 │   │   ├── config.py         # env-driven Settings
 │   │   ├── main.py           # app factory + routers
-│   │   ├── orchestrator/     # sai, state_machine, approval_gate, executor
+│   │   ├── orchestrator/     # dispatcher, state_machine, approval_gate, executor
 │   │   ├── memory/           # redis_store + schema (EventProfile)
 │   │   ├── integrations/     # browserbase, midjourney, openrouter_images,
 │   │   │   #                    openrouter_auth, pika, slack, supabase,
@@ -234,12 +249,12 @@ explicitly, not as part of CI sandboxes that block egress.
 ## How a run flows
 
 1. **Initiation** — user opens the dashboard and chats (Demo or Live).
-2. **Interview** — Sai asks structured questions; every answer is written into the
+2. **Interview** — the dispatcher asks structured questions; every answer is written into the
    Redis `EventProfile` (`event`, `audience`, `aesthetic`, `ops`, `outreach`,
    `artifacts`).
-3. **Consensus** — Sai posts a concise summary and pauses for `APPROVE`.
+3. **Consensus** — the agent posts a concise summary and pauses for `APPROVE`.
 4. **Execution** — on approval the orchestrator fans out:
-   - **Branding** — OpenRouter image / Midjourney MCP / SVG fallback → hero,
+   - **Branding** — OpenRouter image (`openai/gpt-5.4-image-2`) / SVG fallback → hero,
      invite cover, logo lockup, palette. Surfaced in the dashboard **Brand** card
      with a loading state while generating.
    - **Website** — UI/UX Pro Max designs a system; the OpenRouter coder tool-calls
