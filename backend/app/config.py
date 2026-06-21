@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 
     assets_output_dir: str = "var/assets"
     build_output_dir: str = "var/builds"
+    archive_output_dir: str = "var/archive"  # completed-event snapshots for Past Events
     public_base_url: str = ""  # e.g. https://your-subdomain.ngrok-free.dev
 
     vercel_token: str = ""
@@ -73,7 +74,7 @@ class Settings(BaseSettings):
 
     # OpenRouter site coder — UI/UX Pro Max + OpenRouter (primary site generation)
     openrouter_api_key: str = ""
-    openrouter_model: str = "openai/gpt-oss-120b:free"
+    openrouter_model: str = "deepseek/deepseek-v4-flash"
     openrouter_max_turns: int = 12
     openrouter_timeout_seconds: int = 180
     openrouter_site_url: str = "https://github.com/EventPlannerAgent/marquee"
@@ -84,9 +85,15 @@ class Settings(BaseSettings):
 
     # OpenRouter image generation
     openrouter_image_enabled: bool = True
-    openrouter_image_model: str = "google/gemini-3-pro-image"
+    openrouter_image_model: str = "openai/gpt-5.4-image-2"
     openrouter_image_timeout_seconds: int = 120
     openrouter_image_primary: bool = True  # OpenRouter first; Midjourney MCP is fallback
+
+    # Image prompt smith — rewrites brand-asset briefs into clean 2D clip-art prompts
+    # before they hit the image API. Falls back to the base briefs on any failure.
+    image_prompt_smith_enabled: bool = True
+    image_prompt_model: str = ""  # defaults to openrouter_model when empty
+    image_prompt_smith_timeout_seconds: int = 60
 
     # OpenCode CLI — optional fallback site generation
     opencode_enabled: bool = False
@@ -99,6 +106,7 @@ class Settings(BaseSettings):
     def _absolute_data_dirs(self) -> "Settings":
         self.assets_output_dir = _resolve_dir(self.assets_output_dir)
         self.build_output_dir = _resolve_dir(self.build_output_dir)
+        self.archive_output_dir = _resolve_dir(self.archive_output_dir)
         return self
 
 

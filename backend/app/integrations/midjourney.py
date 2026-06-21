@@ -215,7 +215,10 @@ async def generate_brand_assets(
     asset_dir = _session_asset_dir(profile, cfg)
     _clear_previous_brand_assets(asset_dir)
     briefs = build_invite_asset_briefs(profile)
-    briefs = await craft_invite_prompts(profile, briefs, cfg)
+    try:
+        briefs = await craft_invite_prompts(profile, briefs, cfg)
+    except Exception:  # never let prompt refinement abort brand generation
+        logger.exception("Image prompt smith crashed; using base briefs")
 
     async with tracer.span("midjourney.generate", session_id=profile.session_id):
         paths: list[str] | None = None

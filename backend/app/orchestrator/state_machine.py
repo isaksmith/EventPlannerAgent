@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from app.memory.schema import EventProfile, EventType, SessionStatus
+from app.memory.schema import EventFormat, EventProfile, EventType, SessionStatus
 
 
 class InterviewStep(StrEnum):
@@ -121,13 +121,13 @@ def _event_type_display(profile: EventProfile) -> str:
     return profile.event.type.value.replace("_", " ")
 
 
-def _parse_format(text: str) -> tuple[str, str]:
+def _parse_format(text: str) -> tuple[str, EventFormat]:
     normalized = text.strip().lower()
     if "virtual" in normalized and "hybrid" not in normalized:
-        return normalized, "virtual"
+        return normalized, EventFormat.VIRTUAL
     if "hybrid" in normalized:
-        return text.strip(), "hybrid"
-    return text.strip(), "in_person"
+        return text.strip(), EventFormat.HYBRID
+    return text.strip(), EventFormat.IN_PERSON
 
 
 def next_step(current: InterviewStep, profile: EventProfile) -> InterviewStep:
@@ -176,7 +176,7 @@ def apply_answer(profile: EventProfile, step: InterviewStep, answer: str) -> Eve
     elif step == InterviewStep.LOCATION:
         location, fmt = _parse_format(text)
         profile.event.location = location
-        profile.event.format = fmt  # type: ignore[assignment]
+        profile.event.format = fmt
     elif step == InterviewStep.ATTENDEES:
         digits = "".join(ch for ch in text if ch.isdigit())
         profile.event.expected_attendees = int(digits) if digits else 0

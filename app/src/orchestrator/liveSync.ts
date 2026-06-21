@@ -165,10 +165,12 @@ export function deliverablesFromProfile(profile: EventProfile, apiBase: string):
     return out
   }
 
+  const inFlight = profile.status !== 'done'
+
   const branding = brandingFromProfile(profile, apiBase)
   if (branding) {
     out.branding = branding
-  } else if (profile.status === 'executing') {
+  } else if (inFlight) {
     out.branding = placeholderBranding(profile)
   }
 
@@ -180,7 +182,7 @@ export function deliverablesFromProfile(profile: EventProfile, apiBase: string):
       title: profile.event?.name || 'Your Event',
       subtitle: `${profile.event?.expected_attendees || '—'} attendees · ${profile.event?.location || 'TBD'}`,
     }
-  } else if (profile.status === 'executing') {
+  } else if (inFlight) {
     out.website = { url: '', eyebrow: '…', title: 'Building…', subtitle: 'Generating your registration site', loading: true }
   }
 
@@ -191,7 +193,7 @@ export function deliverablesFromProfile(profile: EventProfile, apiBase: string):
   const drafts = profile.artifacts.outreach_drafts
   if (drafts?.length) {
     out.outreach = drafts.map(draftFromText)
-  } else if (profile.status === 'executing') {
+  } else if (inFlight) {
     out.outreach = [{ to: '…', subject: 'Drafting sponsor emails…', body: '' }]
   }
   return out

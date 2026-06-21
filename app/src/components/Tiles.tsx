@@ -45,16 +45,15 @@ function SiteFrame({ site }: { site: SiteResult }) {
         <span className="ml-2 text-[9px] text-slate-500 mono truncate">{site.loading ? '…' : site.url}</span>
       </div>
       {site.loading ? (
-        <div className="absolute inset-0 top-5 flex flex-col items-center justify-center gap-3 px-3" style={{ background: 'linear-gradient(135deg,#141822,#0d1117)' }}>
-          <div className="animate-pulse" style={{ color: 'rgba(34,211,238,.45)' }}>
+        <div className="absolute inset-0 top-5 flex flex-col items-center justify-center gap-3 px-3 animate-pulse" style={{ background: 'linear-gradient(135deg,#141822,#0d1117)' }}>
+          <div style={{ color: 'rgba(34,211,238,.45)' }}>
             <div className="h-3 w-24 rounded mx-auto mb-3" style={{ background: 'rgba(34,211,238,.15)' }} />
             <div className="h-5 w-32 rounded mx-auto mb-2" style={{ background: 'rgba(34,211,238,.1)' }} />
             <div className="h-2.5 w-40 rounded mx-auto mb-4" style={{ background: 'rgba(34,211,238,.08)' }} />
             <div className="h-6 w-20 rounded-full mx-auto" style={{ background: 'rgba(34,211,238,.12)' }} />
           </div>
-          <div className="flex items-center gap-2" style={{ color: 'rgba(34,211,238,.6)' }}>
-            <span className="spinner" style={{ borderColor: 'rgba(34,211,238,.2)', borderTopColor: 'rgba(34,211,238,.6)' }} />
-            <span className="text-[10px]">Building site…</span>
+          <div className="text-[10px]" style={{ color: 'rgba(34,211,238,.6)' }}>
+            Building site…
           </div>
         </div>
       ) : (
@@ -121,7 +120,7 @@ function BrandSource({ kit }: { kit: BrandKit }) {
   if (kit.generatedBy === 'loading') {
     return (
       <div className="text-[10px] text-clay flex items-center gap-1.5">
-        <span className="spinner" /> Generating brand assets…
+        Generating brand assets…
       </div>
     )
   }
@@ -142,10 +141,10 @@ export function TileBody({ k, deliverables, full }: { k: DeliverableKey; deliver
         </div>
         <div className="rounded-lg border border-line overflow-hidden flex-1 min-h-[48px]">
           {kit.generatedBy === 'loading' ? (
-            <div className="h-full grid place-items-center" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)' }}>
-              <div className="flex flex-col items-center gap-2">
-                <div className="spinner" />
-                <span className="text-[10px]" style={{ color: 'rgba(34,211,238,.5)' }}>Generating images…</span>
+            <div className="h-full animate-pulse" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)' }}>
+              <div className="h-full flex flex-col items-center justify-center gap-2">
+                <div className="h-2.5 w-28 rounded" style={{ background: 'rgba(34,211,238,.12)' }} />
+                <div className="h-3 w-36 rounded" style={{ background: 'rgba(34,211,238,.08)' }} />
               </div>
             </div>
           ) : kit.heroImageUrl ? (
@@ -173,12 +172,10 @@ export function TileBody({ k, deliverables, full }: { k: DeliverableKey; deliver
         {!kit.heroImageUrl && kit.generatedBy === 'loading' ? (
           <div>
             <div className="text-sm font-semibold mb-2">Invite cover</div>
-            <div className="rounded-xl border border-line overflow-hidden" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)', height: 200 }}>
-              <div className="h-full grid place-items-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="spinner" />
-                  <span className="text-[12px]" style={{ color: 'rgba(34,211,238,.5)' }}>Generating invite cover…</span>
-                </div>
+            <div className="rounded-xl border border-line overflow-hidden animate-pulse" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)', height: 200 }}>
+              <div className="h-full flex flex-col items-center justify-center gap-2">
+                <div className="h-4 w-40 rounded" style={{ background: 'rgba(34,211,238,.1)' }} />
+                <div className="h-3 w-32 rounded" style={{ background: 'rgba(34,211,238,.07)' }} />
               </div>
             </div>
           </div>
