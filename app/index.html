@@ -337,6 +337,25 @@ function paint(idx, force){
   let dw,dh; if(ir>cr){dh=h;dw=h*ir}else{dw=w;dh=w/ir}
   ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh)
 }
+/* smooth sub-frame painting: cross-fade between adjacent frames */
+let curF=-1
+function paintSmooth(p){
+  const f = p*(N-1)
+  const i = Math.floor(f), frac = f-i
+  const a = frames[i], b = frames[Math.min(i+1, N-1)]
+  if(!a || !b) return
+  if(!a.complete || !a.naturalWidth || !b.complete || !b.naturalWidth) return
+  const w=canvas.width, h=canvas.height
+  const draw=(img, alpha)=>{
+    const ir=img.naturalWidth/img.naturalHeight, cr=w/h
+    let dw,dh; if(ir>cr){dh=h;dw=h*ir}else{dw=w;dh=w/ir}
+    ctx.globalAlpha=alpha; ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh)
+  }
+  // only blend when the fractional part is meaningful — avoids double-draw cost at integer bounds
+  if(frac < 0.004){ if(i!==curF){ ctx.globalAlpha=1; draw(a,1); curF=i } }
+  else { ctx.globalAlpha=1; draw(a,1-frac); ctx.globalAlpha=frac; draw(b,frac); curF=-1 }
+  ctx.globalAlpha=1
+}
 function progress(){
   const r = track.getBoundingClientRect()
   return clamp(-r.top/(track.offsetHeight-innerHeight),0,1)
@@ -352,7 +371,7 @@ function plateau(p, c, half){ // ramp up, HOLD, ramp down — so each line dwell
 function update(){
   const p = progress()
   // FORWARD: scrolling down (p→1) flies forward through the venue to the lit stage
-  paint(Math.round(p*(N-1)))
+  paintSmooth(p)
   // beats
   for(let i=0;i<BEATS.length;i++){
     const o = plateau(p, BEATS[i].p, 0.10)
@@ -383,6 +402,8 @@ function start(){
 
 /* ---- auto intro: gently scroll a few frames to reveal the first hero beat ---- */
 let autoScroll=false, autoScrollTimer=null
+// ease-in-out cubic — smoother start/stop than smoothstep
+const easeInOut = t => t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2
 function autoIntro(){
   // target the first beat (p≈0.10) so "Marquee, your personal event planner." is visible
   const target = 0.10 * (track.offsetHeight - innerHeight)
@@ -390,12 +411,12 @@ function autoIntro(){
   // only auto-scroll if we're at the very top
   if(startY > 4) return
   autoScroll=true
-  const DURATION = 2600, t0 = performance.now()
+  const DURATION = 3200, t0 = performance.now()
   function step(now){
     if(!autoScroll) return
     const t = clamp((now - t0)/DURATION, 0, 1)
-    const eased = smooth(t)
-    window.scrollTo(0, Math.round(startY + (target - startY) * eased))
+    const eased = easeInOut(t)
+    window.scrollTo(0, startY + (target - startY) * eased)
     if(t < 1){ requestAnimationFrame(step) } else { autoScroll=false }
   }
   requestAnimationFrame(step)
