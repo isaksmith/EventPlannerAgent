@@ -376,7 +376,39 @@ function start(){
   addEventListener('resize', ()=>{size();update();updateDemo()})
   if(reduce){ // static fallback: show a mid frame, beats are stacked by CSS
     paint(Math.round(N*0.5), true)
+    return
   }
+  autoIntro()
+}
+
+/* ---- auto intro: gently scroll a few frames to reveal the first hero beat ---- */
+let autoScroll=false, autoScrollTimer=null
+function autoIntro(){
+  // target the first beat (p≈0.10) so "Marquee, your personal event planner." is visible
+  const target = 0.10 * (track.offsetHeight - innerHeight)
+  const startY = window.scrollY
+  // only auto-scroll if we're at the very top
+  if(startY > 4) return
+  autoScroll=true
+  const DURATION = 2600, t0 = performance.now()
+  function step(now){
+    if(!autoScroll) return
+    const t = clamp((now - t0)/DURATION, 0, 1)
+    const eased = smooth(t)
+    window.scrollTo(0, Math.round(startY + (target - startY) * eased))
+    if(t < 1){ requestAnimationFrame(step) } else { autoScroll=false }
+  }
+  requestAnimationFrame(step)
+  // cancel the moment the user takes over
+  const cancel = () => {
+    if(!autoScroll) return
+    autoScroll=false
+    clearTimeout(autoScrollTimer)
+  }
+  addEventListener('wheel', cancel, {passive:true, once:true})
+  addEventListener('touchmove', cancel, {passive:true, once:true})
+  addEventListener('keydown', cancel, {passive:true, once:true})
+  addEventListener('mousedown', cancel, {passive:true, once:true})
 }
 /* ===== DEMO ACT — scroll-driven beats + sponsor engine ===== */
 const demoTrack = document.getElementById('demoTrack')
