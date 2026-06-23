@@ -6,3 +6,9 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .env
+backend/.railway/
+backend/.railway-config-pull-66048/
+backend/.agents/
+backend/node_modules/
+backend/package.json
+backend/package-lock.json

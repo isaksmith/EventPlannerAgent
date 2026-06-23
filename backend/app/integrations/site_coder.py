@@ -102,7 +102,14 @@ Requirements for index.html:
    Skip this section for purely virtual/online events.
 7. Link slack_url / devpost_url from artifacts when present.
 7. Single self-contained index.html (Tailwind CDN or embedded CSS OK). Optional assets/styles.css.
-8. Do not delete event_profile.json, UI_UX_DESIGN_SYSTEM.md, or files in assets/.
+8. SCROLL ANIMATIONS (required): Add scroll-triggered reveal animations using IntersectionObserver.
+   - Elements (sections, cards, headings, images) should fade-in + slide-up as they enter the viewport.
+   - Add CSS classes like .reveal { opacity:0; transform:translateY(30px); transition:opacity 0.6s ease, transform 0.6s ease; }
+     and .reveal.visible { opacity:1; transform:translateY(0); }
+   - Add a small <script> that creates an IntersectionObserver to add .visible when elements scroll into view.
+   - Stagger animations with transition-delay for grouped elements (e.g., bento cards).
+   - Respect prefers-reduced-motion: skip animations for users who prefer reduced motion.
+9. Do not delete event_profile.json, UI_UX_DESIGN_SYSTEM.md, or files in assets/.
 
 When finished, reply with exactly: SITE_COMPLETE
 """
