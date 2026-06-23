@@ -4,9 +4,11 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY app ./app
+COPY skills ./skills
+COPY start.sh ./start.sh
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir . && chmod +x start.sh
 
 EXPOSE 8000
 
-CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+CMD ["./start.sh"]
