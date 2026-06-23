@@ -110,6 +110,10 @@ Requirements for index.html:
    - Stagger animations with transition-delay for grouped elements (e.g., bento cards).
    - Respect prefers-reduced-motion: skip animations for users who prefer reduced motion.
 9. Do not delete event_profile.json, UI_UX_DESIGN_SYSTEM.md, or files in assets/.
+10. FOOTER (required): Include a <footer> at the bottom of the page that says exactly:
+    "Built with Marquee" (linking to https://app-murex-gamma-77.vercel.app).
+    Do NOT mention "UI/UX Pro Max", "OpenRouter", or any internal tool names in the footer or anywhere on the page.
+    If slack_url is present, you may add a "Join Slack" link next to it.
 
 When finished, reply with exactly: SITE_COMPLETE
 """
