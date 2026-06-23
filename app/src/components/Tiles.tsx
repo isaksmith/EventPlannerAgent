@@ -42,7 +42,7 @@ function SiteFrame({ site }: { site: SiteResult }) {
         <span className="h-2 w-2 rounded-full" style={{ background: '#B2553B' }} />
         <span className="h-2 w-2 rounded-full" style={{ background: '#BC8A2E' }} />
         <span className="h-2 w-2 rounded-full" style={{ background: '#7E8C57' }} />
-        <span className="ml-2 text-[9px] text-slate-500 mono truncate">{site.loading ? '…' : site.url}</span>
+        <span className="ml-2 text-[9px] text-slate-500 mono truncate">{site.loading ? '…' : 'marquee.app'}</span>
       </div>
       {site.loading ? (
         <div className="absolute inset-0 top-5 flex flex-col items-center justify-center gap-3 px-3 animate-pulse" style={{ background: 'linear-gradient(135deg,#141822,#0d1117)' }}>
@@ -233,7 +233,6 @@ export function TileBody({ k, deliverables, full }: { k: DeliverableKey; deliver
           <>
             <div className="flex items-center gap-3">
               <a href={`https://${site.url}`} target="_blank" rel="noopener noreferrer" className="text-[12px] px-3 py-1.5 rounded-md text-surface inline-flex items-center gap-1.5 hover:brightness-110" style={{ background: '#B05E40' }}>Open site <Icon name="externalLink" size={12} /></a>
-              <span className="mono text-[12px] text-clay">{site.url}</span>
             </div>
             <div className="grid grid-cols-3 gap-3 text-[12px]">
               <div className="rounded-lg border border-line bg-surface2 p-3"><div className="font-medium">Registration form</div><div className="text-inkSoft mt-1">name · email · team · track</div></div>

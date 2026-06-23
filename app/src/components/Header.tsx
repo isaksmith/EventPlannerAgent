@@ -37,14 +37,6 @@ export function Header(props: {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
-          {live && (
-            <input
-              value={props.apiBase}
-              onChange={(e) => props.onApiBaseChange(e.target.value)}
-              className="hidden lg:block w-40 px-2 py-1 rounded-lg text-[11px] mono bg-surface2 border border-line text-inkSoft"
-              title="Backend API URL"
-            />
-          )}
           <div
             className="inline-flex rounded-lg border border-line p-0.5 bg-surface2 text-[12px] font-medium"
             role="group"
