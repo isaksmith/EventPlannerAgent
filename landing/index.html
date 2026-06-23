@@ -385,7 +385,7 @@ function update(){
   cue.style.opacity = clamp(1 - p/0.06, 0, 1)
 }
 let ticking=false
-function onScroll(){ if(!ready||ticking)return; ticking=true; requestAnimationFrame(()=>{update();updateDemo();ticking=false}) }
+function onScroll(){ if(!ready||ticking)return; ticking=true; requestAnimationFrame(()=>{clampScroll();update();updateDemo();ticking=false}) }
 
 function start(){
   if(ready) return; ready=true
@@ -401,7 +401,7 @@ function start(){
 }
 
 /* ---- auto intro: gently scroll a few frames to reveal the first hero beat ---- */
-let autoScroll=false, autoScrollTimer=null
+let autoScroll=false, autoScrollTimer=null, introFloor=0
 // ease-in-out cubic — smoother start/stop than smoothstep
 const easeInOut = t => t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2
 function autoIntro(){
@@ -409,7 +409,7 @@ function autoIntro(){
   const target = 0.10 * (track.offsetHeight - innerHeight)
   const startY = window.scrollY
   // only auto-scroll if we're at the very top
-  if(startY > 4) return
+  if(startY > 4){ introFloor = Math.max(startY, target); return }
   autoScroll=true
   const DURATION = 3200, t0 = performance.now()
   function step(now){
@@ -417,7 +417,7 @@ function autoIntro(){
     const t = clamp((now - t0)/DURATION, 0, 1)
     const eased = easeInOut(t)
     window.scrollTo(0, startY + (target - startY) * eased)
-    if(t < 1){ requestAnimationFrame(step) } else { autoScroll=false }
+    if(t < 1){ requestAnimationFrame(step) } else { autoScroll=false; introFloor=target; clampScroll() }
   }
   requestAnimationFrame(step)
   // cancel the moment the user takes over
@@ -425,11 +425,19 @@ function autoIntro(){
     if(!autoScroll) return
     autoScroll=false
     clearTimeout(autoScrollTimer)
+    introFloor = Math.max(window.scrollY, target)
+    clampScroll()
   }
   addEventListener('wheel', cancel, {passive:true, once:true})
   addEventListener('touchmove', cancel, {passive:true, once:true})
   addEventListener('keydown', cancel, {passive:true, once:true})
   addEventListener('mousedown', cancel, {passive:true, once:true})
+}
+// keep the user from scrolling above the intro floor — the hero text stays at the top
+function clampScroll(){
+  if(introFloor>0 && window.scrollY < introFloor){
+    window.scrollTo(0, introFloor)
+  }
 }
 /* ===== DEMO ACT — scroll-driven beats + sponsor engine ===== */
 const demoTrack = document.getElementById('demoTrack')
