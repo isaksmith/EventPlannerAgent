@@ -21,6 +21,7 @@ export function Header(props: {
   onApiBaseChange: (v: string) => void
   onToggleChip: (k: DeliverableKey) => void
   onOpenDrawer: () => void
+  onViewEvent?: (ev: import('../api/client').PastEvent) => void
 }) {
   const { phase, auto, live, nextLabel, nextDisabled, available, openPanels } = props
   const tone = phase === 5 ? 'border-olive/50 text-olive bg-olive/10'
@@ -58,7 +59,7 @@ export function Header(props: {
               Live
             </button>
           </div>
-          <PastEvents />
+          <PastEvents onViewEvent={props.onViewEvent} />
           <button onClick={props.onReset} className="px-3 py-1.5 rounded-lg text-sm border border-line text-inkSoft hover:bg-surface2 hover:text-ink" title="Reset current mode only">
             Reset
           </button>

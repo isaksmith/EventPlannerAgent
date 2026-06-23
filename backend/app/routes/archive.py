@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -18,6 +19,48 @@ router = APIRouter(prefix="/api", tags=["archive"])
 async def get_events() -> dict:
     """List previously generated events (snapshots) for the dashboard history menu."""
     return {"events": list_archived_events()}
+
+
+@router.get("/events/{archive_id}")
+async def get_event(archive_id: str) -> dict:
+    """Return the full archived event profile for the dashboard past-event view."""
+    base = archived_event_dir(archive_id)
+    if base is None:
+        raise HTTPException(status_code=404, detail="Archived event not found")
+    meta_path = base / "meta.json"
+    if not meta_path.is_file():
+        raise HTTPException(status_code=404, detail="Event metadata not found")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+
+    # Load the full event profile if available
+    profile_path = base / "event_profile.json"
+    profile = None
+    if profile_path.is_file():
+        try:
+            profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    # Build dashboard-ready URLs for brand assets
+    brand_files = [
+        {"name": fname, "url": f"/api/archive/{archive_id}/asset/{fname}"}
+        for fname in meta.get("brand_files", [])
+        if not fname.endswith(".mp4")
+    ]
+    cover = None
+    for stem in ("invite_cover", "invite_hero", "hero", "invite_motif", "logo"):
+        match = next((bf for bf in brand_files if bf["name"].startswith(stem + ".")), None)
+        if match:
+            cover = match["url"]
+            break
+
+    return {
+        **meta,
+        "brand_files": brand_files,
+        "cover_url": cover,
+        "site_url": f"/api/archive/{archive_id}/site/" if meta.get("has_site") else None,
+        "profile": profile,
+    }
 
 
 @router.delete("/events/{archive_id}")

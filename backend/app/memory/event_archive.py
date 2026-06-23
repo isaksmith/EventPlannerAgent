@@ -86,6 +86,14 @@ def archive_event(profile: EventProfile, cfg: Settings | None = None) -> str | N
         "brand_files": brand_files,
     }
     (dest / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+    # Save the full event profile so the dashboard can reconstruct the past event view
+    try:
+        profile_data = profile.model_dump()
+        (dest / "event_profile.json").write_text(json.dumps(profile_data, indent=2), encoding="utf-8")
+    except Exception as exc:
+        logger.warning("Failed to save event_profile.json for archive %s: %s", archive_id, exc)
+
     logger.info("Archived event '%s' -> %s", name, archive_id)
     return archive_id
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { assetUrl, backendUrl, deleteEvent, fetchEvents, type PastEvent } from '../api/client'
+import { assetUrl, backendUrl, deleteEvent, fetchEvent, fetchEvents, type PastEvent } from '../api/client'
 import { Icon } from './Icon'
 
 function formatDate(iso: string): string {
@@ -8,7 +8,7 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function EventRow({ ev, onDelete }: { ev: PastEvent; onDelete: (id: string) => void }) {
+function EventRow({ ev, onDelete, onView }: { ev: PastEvent; onDelete: (id: string) => void; onView: (ev: PastEvent) => void }) {
   const [open, setOpen] = useState(false)
   const subtitle = [ev.type, ev.location].filter(Boolean).join(' · ')
   return (
@@ -35,15 +35,24 @@ function EventRow({ ev, onDelete }: { ev: PastEvent; onDelete: (id: string) => v
           </div>
         </button>
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => onView(ev)}
+            className="text-[10px] px-2 py-1 rounded-md text-surface font-medium hover:brightness-110 inline-flex items-center gap-1"
+            style={{ background: '#B05E40' }}
+            title="View event dashboard"
+          >
+            Dashboard <Icon name="externalLink" size={11} />
+          </button>
           {ev.site_url && (
             <a
               href={backendUrl(ev.site_url)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] px-2 py-1 rounded-md text-surface font-medium hover:brightness-110 inline-flex items-center gap-1"
-              style={{ background: '#B05E40' }}
+              className="text-[10px] px-2 py-1 rounded-md border border-line text-inkSoft hover:bg-surface2 inline-flex items-center gap-1"
+              title="View generated site"
             >
-              View <Icon name="externalLink" size={11} />
+              Site <Icon name="externalLink" size={11} />
             </a>
           )}
           <button
@@ -89,7 +98,7 @@ function EventRow({ ev, onDelete }: { ev: PastEvent; onDelete: (id: string) => v
   )
 }
 
-export function PastEvents() {
+export function PastEvents({ onViewEvent }: { onViewEvent?: (ev: PastEvent) => void }) {
   const [open, setOpen] = useState(false)
   const [events, setEvents] = useState<PastEvent[]>([])
   const [loading, setLoading] = useState(false)
@@ -173,7 +182,7 @@ export function PastEvents() {
             ) : (
               <ul className="space-y-2">
                 {events.map((ev) => (
-                  <EventRow key={ev.id} ev={ev} onDelete={handleDelete} />
+                  <EventRow key={ev.id} ev={ev} onDelete={handleDelete} onView={(e) => onViewEvent?.(e)} />
                 ))}
               </ul>
             )}

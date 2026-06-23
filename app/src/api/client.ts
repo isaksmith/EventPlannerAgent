@@ -90,6 +90,12 @@ export async function fetchEvents(): Promise<PastEvent[]> {
   return data.events ?? []
 }
 
+export async function fetchEvent(archiveId: string): Promise<PastEvent & { profile?: Record<string, unknown> }> {
+  const res = await fetch(`${apiBase()}/api/events/${encodeURIComponent(archiveId)}`)
+  if (!res.ok) throw new Error(`Event fetch failed ${res.status}`)
+  return res.json()
+}
+
 export async function deleteEvent(id: string): Promise<void> {
   await fetch(`${apiBase()}/api/events/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
