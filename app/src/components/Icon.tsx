@@ -16,6 +16,8 @@ export type IconName =
   | 'minimize'
   | 'x'
   | 'chevronDown'
+  | 'chevronLeft'
+  | 'chevronRight'
   | 'externalLink'
   | 'refresh'
   | 'diamond'
@@ -106,6 +108,8 @@ const PATHS: Record<IconName, JSX.Element> = {
     </>
   ),
   chevronDown: <path d="m6 9 6 6 6-6" />,
+  chevronLeft: <path d="m15 18-6-6 6-6" />,
+  chevronRight: <path d="m9 18 6-6-6-6" />,
   externalLink: (
     <>
       <path d="M15 3h6v6" />

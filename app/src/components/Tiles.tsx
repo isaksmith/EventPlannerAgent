@@ -1,5 +1,6 @@
 // Deliverable tiles (Branding / Website / Outreach), the tiling grid, and the
-// maximize modal. Tile bodies render purely from integration-produced data.
+// the maximize modal. Tile bodies render purely from integration-produced data.
+import { useState, useCallback } from 'react'
 import type { DeliverableKey, BrandKit, SiteResult, EmailDraft, LocationInfo } from '../types'
 import { Icon, type IconName } from './Icon'
 import { mapDirectionsUrl, mapEmbedUrl } from '../lib/maps'
@@ -103,12 +104,64 @@ function AssetTile({ label, glyph, imageUrl, videoUrl }: { label: string; glyph?
   )
 }
 
+function BrandCarousel({ kit }: { kit: BrandKit }) {
+  const images: { url: string; label: string }[] = []
+  if (kit.logo.imageUrl) images.push({ url: kit.logo.imageUrl, label: 'Logo' })
+  if (kit.heroImageUrl) images.push({ url: kit.heroImageUrl, label: 'Hero' })
+  for (const a of kit.assets) {
+    if (a.imageUrl) images.push({ url: a.imageUrl, label: a.label })
+    if (a.videoUrl) images.push({ url: a.videoUrl, label: a.label, })
+  }
+  if (kit.promoVideoUrl) images.push({ url: kit.promoVideoUrl, label: 'Promo' })
+
+  const [idx, setIdx] = useState(0)
+  const next = useCallback(() => setIdx((i) => (i + 1) % images.length), [images.length])
+  const prev = useCallback(() => setIdx((i) => (i - 1 + images.length) % images.length), [images.length])
+
+  if (images.length === 0) return null
+  const current = images[idx]
+  const isVideo = current.url.endsWith('.mp4') || current.url.endsWith('.webm') || current.label === 'Promo'
+
+  return (
+    <div className="relative rounded-lg border border-line overflow-hidden flex-1 min-h-[120px] bg-surface2 group">
+      {isVideo ? (
+        <video src={current.url} className="w-full h-full object-cover min-h-[120px]" muted loop playsInline autoPlay />
+      ) : (
+        <img src={current.url} alt={current.label} className="w-full h-full object-cover min-h-[120px]" />
+      )}
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/50 hover:bg-black/70 text-white grid place-items-center backdrop-blur-sm transition-colors" aria-label="Previous image">
+            <Icon name="chevronLeft" size={14} />
+          </button>
+          <button onClick={next} className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/50 hover:bg-black/70 text-white grid place-items-center backdrop-blur-sm transition-colors" aria-label="Next image">
+            <Icon name="chevronRight" size={14} />
+          </button>
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)} className={'h-1.5 rounded-full transition-all ' + (i === idx ? 'w-4 bg-white' : 'w-1.5 bg-white/40')} aria-label={`Go to image ${i + 1}`} />
+            ))}
+          </div>
+          <div className="absolute top-1.5 left-1.5 text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-white backdrop-blur-sm">{current.label}</div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function LogoMark({ kit, size }: { kit: BrandKit; size: 'sm' | 'lg' }) {
   const dim = size === 'lg' ? 'h-24 w-24' : 'h-14 w-14'
-  const textSize = size === 'lg' ? 'text-3xl' : 'text-sm'
   if (kit.logo.imageUrl) {
     return <img src={kit.logo.imageUrl} alt="Logo" className={`${dim} shrink-0 rounded-xl border border-line object-cover`} />
   }
+  if (kit.generatedBy === 'loading') {
+    return (
+      <div className={`${dim} shrink-0 rounded-xl border border-line flex items-center justify-center bg-surface2`}>
+        <div className="h-5 w-5 border-2 border-clay/30 border-t-clay rounded-full animate-spin" />
+      </div>
+    )
+  }
+  const textSize = size === 'lg' ? 'text-3xl' : 'text-sm'
   return (
     <div className={`${dim} shrink-0 rounded-xl border border-line flex items-center justify-center font-bold ${textSize}`} style={{ background: kit.logo.bg, color: '#22d3ee' }}>
       <span className="whitespace-nowrap">{kit.logo.text.slice(0, 2)}<span style={{ color: kit.logo.accent }}>/</span>{kit.logo.text.slice(2, 4) || 'EV'}</span>
@@ -124,9 +177,8 @@ function BrandSource({ kit }: { kit: BrandKit }) {
       </div>
     )
   }
-  const source = kit.generatedBy === 'openrouter' || kit.generatedBy === 'midjourney' ? 'OpenRouter' : 'Generated assets'
   const count = kit.assets.length + (kit.logo.imageUrl ? 1 : 0) + (kit.heroImageUrl ? 1 : 0) + (kit.promoVideoUrl ? 1 : 0)
-  return <div className="text-[10px] text-inkSoft">{count} assets · {source} · {kit.vibe}</div>
+  return <div className="text-[10px] text-inkSoft">{count} assets · {kit.vibe}</div>
 }
 
 export function TileBody({ k, deliverables, full }: { k: DeliverableKey; deliverables: Deliverables; full?: boolean }) {
@@ -139,20 +191,16 @@ export function TileBody({ k, deliverables, full }: { k: DeliverableKey; deliver
           <LogoMark kit={kit} size="sm" />
           <div className="flex-1"><Swatches palette={kit.palette} /></div>
         </div>
-        <div className="rounded-lg border border-line overflow-hidden flex-1 min-h-[48px]">
-          {kit.generatedBy === 'loading' ? (
-            <div className="h-full animate-pulse" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)' }}>
-              <div className="h-full flex flex-col items-center justify-center gap-2">
-                <div className="h-2.5 w-28 rounded" style={{ background: 'rgba(34,211,238,.12)' }} />
-                <div className="h-3 w-36 rounded" style={{ background: 'rgba(34,211,238,.08)' }} />
-              </div>
+        {kit.generatedBy === 'loading' ? (
+          <div className="rounded-lg border border-line overflow-hidden flex-1 min-h-[48px] animate-pulse" style={{ background: 'linear-gradient(120deg,#1a1e2b,#121520)' }}>
+            <div className="h-full flex flex-col items-center justify-center gap-2">
+              <div className="h-2.5 w-28 rounded" style={{ background: 'rgba(34,211,238,.12)' }} />
+              <div className="h-3 w-36 rounded" style={{ background: 'rgba(34,211,238,.08)' }} />
             </div>
-          ) : kit.heroImageUrl ? (
-            <img src={kit.heroImageUrl} alt="Hero" className="w-full h-full object-cover min-h-[48px]" />
-          ) : (
-            <div className="h-full grid place-items-center text-[10px]" style={{ background: 'linear-gradient(120deg,#0a1f44,#08111f)', color: 'rgba(34,211,238,.7)' }}>◢◤ background graphic</div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <BrandCarousel kit={kit} />
+        )}
         <BrandSource kit={kit} />
       </div>
     )

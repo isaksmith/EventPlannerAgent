@@ -32,8 +32,7 @@ export function Header(props: {
         <div className="flex items-center gap-2.5">
           <a href="/" className="h-9 w-9 rounded-xl grid place-items-center text-surface font-semibold shrink-0 shadow-sm transition-transform hover:scale-105 hover:brightness-110" style={{ background: '#CC785C' }} aria-label="Back to Marquee landing page" title="Back to landing page">M</a>
           <div>
-            <div className="font-display text-[19px] font-semibold tracking-tight leading-none">Marquee</div>
-            <div className="text-[11px] text-inkSoft leading-none mt-1">{live ? 'live backend' : 'plan your whole event by chat'}</div>
+            <div className="font-display text-[22px] font-semibold tracking-tight leading-none">Marquee</div>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
