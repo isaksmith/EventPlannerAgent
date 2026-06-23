@@ -102,14 +102,18 @@
   .cb.you{align-self:flex-end;background:#F6E6DE;border-bottom-right-radius:5px}
   .brand-row{display:flex;gap:16px;align-items:center}
   .brand-logo{height:74px;width:74px;border-radius:16px;background:#0a1f44;display:grid;place-items:center;color:#22d3ee;font-weight:700;font-size:19px}
+  .brand-logo-img{height:74px;width:74px;border-radius:16px;object-fit:cover;border:1px solid var(--line)}
   .brand-sw{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .brand-sw i{height:48px;border-radius:9px;display:block;border:1px solid rgba(0,0,0,.06)}
   .brand-hero{margin-top:16px;height:44%;border-radius:12px;display:grid;place-items:center;color:rgba(34,211,238,.8);font-size:12px;background:linear-gradient(120deg,#0a1f44,#08111f)}
+  .brand-hero-img{margin-top:16px;height:44%;border-radius:12px;object-fit:cover;width:100%}
   .demo-frame.browser .df-body{padding:0;display:flex;flex-direction:column}
   .bw-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:#ECE7DC;flex:none}
   .bw-bar i{height:9px;width:9px;border-radius:50%}.bw-bar i:nth-child(1){background:#BB6047}.bw-bar i:nth-child(2){background:#BC8A2E}.bw-bar i:nth-child(3){background:#7E8C57}
   .bw-bar span{margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#8a857b}
-  .bw-page{flex:1;min-height:0;color:#fff;background:linear-gradient(135deg,#0a1f44,#08111f);display:grid;place-items:center;text-align:center}
+  .bw-page{flex:1;min-height:0;color:#fff;background:linear-gradient(135deg,#0a1f44,#08111f);display:grid;place-items:center;text-align:center;position:relative;overflow:hidden}
+  .site-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+  .bw-overlay{position:relative;z-index:1;padding:0 18px}
   .site-eyebrow{font-size:9px;letter-spacing:.3em;color:rgba(127,211,224,.8)}
   .site-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(1.4rem,3vw,2.2rem);margin-top:6px}
   .site-meta{font-size:11px;color:#c9d4e0;margin-top:8px}
@@ -197,10 +201,10 @@
             <div class="df-head"><span class="df-title">Your brand</span></div>
             <div class="df-body">
               <div class="brand-row">
-                <div class="brand-logo">B/AI</div>
+                <img src="demo/logo.png" alt="Generated logo" class="brand-logo-img" />
                 <div class="brand-sw"><i style="background:#0a1f44"></i><i style="background:#22d3ee"></i><i style="background:#8b5cf6"></i><i style="background:#0e1b2e"></i></div>
               </div>
-              <div class="brand-hero">◢◤ generated hero image</div>
+              <img src="demo/hero.png" alt="Generated hero image" class="brand-hero-img" />
             </div>
           </div>
         </div>
@@ -208,7 +212,7 @@
           <div class="demo-frame browser">
             <div class="df-body">
               <div class="bw-bar"><i></i><i></i><i></i><span>berkeley-ai-hack.vercel.app</span></div>
-              <div class="bw-page"><div>
+              <div class="bw-page"><img src="demo/invite_hero.png" alt="Generated registration site" class="site-hero-img" /><div class="bw-overlay">
                 <div class="site-eyebrow">UC BERKELEY · 2026</div>
                 <div class="site-title">Berkeley <span style="color:#22d3ee">AI</span> Hackathon</div>
                 <div class="site-meta">200 builders · six weeks out · in person</div>
