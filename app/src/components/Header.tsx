@@ -30,7 +30,7 @@ export function Header(props: {
     <header className="border-b border-line bg-canvas/80 backdrop-blur sticky top-0 z-30">
       <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center gap-4">
         <div className="flex items-center gap-2.5">
-          <a href="https://landing-ten-ochre-58.vercel.app" target="_blank" rel="noreferrer" className="h-9 w-9 rounded-xl grid place-items-center text-surface font-semibold shrink-0 shadow-sm transition-transform hover:scale-105 hover:brightness-110" style={{ background: '#CC785C' }} aria-label="Back to Marquee landing page" title="Back to landing page">M</a>
+          <a href="/" className="h-9 w-9 rounded-xl grid place-items-center text-surface font-semibold shrink-0 shadow-sm transition-transform hover:scale-105 hover:brightness-110" style={{ background: '#CC785C' }} aria-label="Back to Marquee landing page" title="Back to landing page">M</a>
           <div>
             <div className="font-display text-[19px] font-semibold tracking-tight leading-none">Marquee</div>
             <div className="text-[11px] text-inkSoft leading-none mt-1">{live ? 'live backend' : 'plan your whole event by chat'}</div>
